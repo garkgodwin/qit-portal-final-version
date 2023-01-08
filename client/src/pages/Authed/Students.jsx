@@ -19,6 +19,10 @@ import { getRoleText } from "../../helpers/formatText";
 //? COMPONETS
 import Filter from "../../components/filter/Filter";
 import Form from "../../components/form/Form";
+import {
+  studentForThisSubject,
+  studentLevelText,
+} from "../../helpers/formatSubjects";
 
 const Students = () => {
   const navigate = useNavigate();
@@ -288,6 +292,9 @@ const Students = () => {
   const handleViewSubjects = (studentID) => {
     navigate(`/students/${studentID}/subjects`);
   };
+  const handleViewGuardian = (studentID) => {
+    navigate(`/students/${studentID}/guardians`);
+  };
 
   return (
     <>
@@ -319,6 +326,7 @@ const Students = () => {
               <th>Course</th>
               <th>Year Level</th>
               <th>Section</th>
+              <th># of guardians</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -329,18 +337,28 @@ const Students = () => {
                 <tr key={student._id}>
                   <td>{index + 1}</td>
                   <td>{person.name}</td>
-                  <td>{student.type}</td>
+                  <td>{studentForThisSubject(student.type)}</td>
                   <td>{student.course}</td>
-                  <td>{student.level}</td>
+                  <td>{studentLevelText(student.level)}</td>
                   <td>{student.section}</td>
+                  <td>{1}</td>
                   <td>
+                    <button
+                      className="table-function"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleViewGuardian(student._id);
+                      }}
+                    >
+                      Guardian
+                    </button>
                     <button
                       className="table-function"
                       onClick={(e) => {
                         handleViewSubjects(student._id);
                       }}
                     >
-                      View subjects
+                      Subjects
                     </button>
                     <button
                       className="table-function"

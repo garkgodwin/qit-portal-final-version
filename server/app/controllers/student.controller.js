@@ -60,7 +60,6 @@ exports.getStudentSubjectSchedules = async (req, res) => {
     data: null,
   });
 };
-
 exports.getStudentSubjectGrades = async (req, res) => {
   return res.status(200).send({
     message: "Successfully fetched student's subject's grades",
@@ -149,6 +148,102 @@ exports.addNewSubjectToStudent = async (req, res) => {
     studentSubject.type
   );
   return studentSubject;
+};
+
+//? GUARDIANS
+
+exports.getStudentGuardians = async (req, res) => {
+  const id = req.params.studentID;
+  if (!id) {
+    return res.status(404).send({
+      message: "Student not found",
+    });
+  }
+  const student = await StudentModel.findById(id)
+    .populate({
+      path: "guardian",
+      populate: {
+        path: "person",
+      },
+    })
+    .exec();
+
+  if (!student) {
+    return res.status(404).send({
+      message: "Student not found",
+    });
+  }
+  if (!student.guardian) {
+    return res.status(404).send({
+      message: "Guardian does not exist",
+    });
+  }
+  const guardians = [student.guardian];
+  return res.status(200).send({
+    message: "Successfully fetched the guardians of this student",
+    data: guardians,
+  });
+};
+exports.addGuardian = async (req, res) => {
+  const id = req.params.studentID;
+  const b = req.body;
+  let userInput = b.user;
+  let personInput = {
+    ...b.person,
+    age: parseInt(b.person.age),
+    gender: parseInt(b.person.gender),
+  };
+
+  /*
+    creating a guardian
+    1. Main get student
+    2. create guardian info
+      - create user info
+      - create person info
+    3. add user id to student guardians
+  */
+  if (!id) {
+    return res.status(404).send({
+      message: "Student not found",
+    });
+  }
+  let student = await StudentModel.findById(id).exec();
+  if (!student) {
+    return res.status(404).send({
+      message: "Student not found",
+    });
+  }
+  if (student.guardian) {
+    return res.status(409).send({
+      message: "Cannot add one more guardian",
+    });
+  }
+  let userInfo = UserModel(userInput);
+  let personInfo = PersonModel(personInput);
+  userInfo.person = personInfo._id;
+  userInfo.otp = generateOtp();
+  personInfo.user = userInfo._id;
+  student.guardian = userInfo._id;
+  await userInfo.save();
+  await personInfo.save();
+  await student.save();
+  await createHistory("created a new guardian", false, req.userId);
+  const newNotif = NotificationModel({
+    subject: "QIT Portal",
+    body: `Please don't share your new OTP: ${newUser.otp}`,
+    mobileNumber: personInfo.mobileNumber,
+    email: personInfo.email,
+    shootDate: "Today",
+  });
+  await newNotif.save();
+  const guardian = await UserModel.findById(userInfo._id).populate({
+    path: "person",
+  });
+
+  return res.status(200).send({
+    message: "Successfully created a guardian",
+    data: guardian,
+  });
 };
 
 exports.createStudent = async (req, res) => {

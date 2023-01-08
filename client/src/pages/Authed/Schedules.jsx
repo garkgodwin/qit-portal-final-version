@@ -73,10 +73,12 @@ const Schedules = () => {
     const result = await getClasses();
     if (result.status === 200) {
       setFormClasses(result.data);
-      setInputs({
-        ...inputs,
-        classID: result.data[0]._id,
-      });
+      if (result.data.length !== 0) {
+        setInputs({
+          ...inputs,
+          classID: result.data[0]._id,
+        });
+      }
     } else {
       setFormClasses([]);
     }

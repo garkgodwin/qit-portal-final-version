@@ -30,11 +30,27 @@ module.exports = function (app) {
     controller.getStudentSubjectSchedules
   );
   router.get(
+    "/:studentID/guardians",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getStudentGuardians
+  );
+  router.post(
+    "/:studentID/guardians",
+    [
+      authJwt.verifyToken,
+      authJwt.isAdmin,
+      check.EmailUnique,
+      check.NameUnique,
+      check.UsernameUnique,
+    ],
+    controller.addGuardian
+  );
+
+  router.get(
     "/:studentID/subjects/:subjectID/grades",
     [authJwt.verifyToken],
     controller.getStudentSubjectGrades
   );
-
   router.get(
     "/:studentID/subjects-available-to-add",
     [authJwt.verifyToken, authJwt.isRegistrar, check.SchoolHasCurrent],

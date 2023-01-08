@@ -12,6 +12,7 @@ import Accounts from "./Accounts";
 import Staffs from "./Staffs";
 import Students from "./Students";
 import StudentClasses from "./StudentClasses";
+import StudentGuardians from "./StudentGuardians";
 import SchoolInfo from "./SchoolInfo";
 import Subjects from "./Subjects";
 import Classes from "./Classes";
@@ -39,6 +40,10 @@ const AuthedPages = () => {
           <Route
             path="students/:studentID/subjects"
             element={<StudentClasses />}
+          />
+          <Route
+            path="students/:studentID/guardians"
+            element={<StudentGuardians />}
           />
           <Route path="school-info" element={<SchoolInfo />} />
           <Route path="subjects" element={<Subjects />} />
