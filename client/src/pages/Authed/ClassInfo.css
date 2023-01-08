@@ -1,0 +1,60 @@
+.ClassInfo{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+}
+
+.class-details{
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  border: 1px solid var(--color-60);
+  margin-bottom: 24px;
+}
+.class-instructor, .class-student, .class-empty{
+  width: 200px;
+  height: 200px;
+  background-color: var(--color-60);
+  margin: 4px;
+  box-shadow: 0 0 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.class-instructor p{
+  font-size: 24px;
+}
+.class-instructor span, .class-student span{
+  font-size: 12px;
+}
+.class-empty{
+  background-color: var(--color-10);
+}
+.class-empty button{
+  font-size: 32px !important;
+}
+
+.class-students{
+  overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.class-student-function, .class-instructor-function{
+  background-color: var(--color-60);
+  border: 1px solid var(--color-30);
+  padding: 4px;
+  margin-top: 8px;
+}
+.class-student-function:hover, .class-instructor-function:hover{
+  background-color: var(--color-30);
+  
+}

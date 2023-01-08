@@ -1,0 +1,221 @@
+.Page{
+  width: 100%;
+  position: relative !important;
+  overflow: hidden;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.Page.page-login{
+  justify-content: center;
+  align-items: center;
+}
+
+.Page.page-authed{
+  height: 97vh;
+  margin-left: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-header{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.page-body{
+  width: 100%;
+  height: 100%;
+  margin-top: 4px;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+  position: relative;
+}
+.page-body::-webkit-scrollbar {
+  width: 1em;
+  cursor: pointer;
+}
+.page-body::-webkit-scrollbar-track{
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+.page-body::-webkit-scrollbar-thumb {
+  background-color: var(--color-60);
+  outline: 1px solid slategrey;
+}
+.page-body table{
+  background-color: transparent;
+  border-collapse: collapse;
+  border: none;
+  max-width: 99%;
+  width: 99%;
+  height: auto;
+  }
+.page-body table thead{
+  background-color: var(--color-60);
+} 
+.page-body table thead tr th{
+  text-align: start;
+  padding: 4px;
+}
+.page-body table tbody tr td{
+  border-top: 10px solid transparent;
+  padding: 4px;
+  cursor: pointer;
+}
+.page-body table tbody tr:nth-child(odd){
+  background-color: var(--color-10);
+  color: var(--color-30);
+}
+.table-button{
+  width: 100%;
+  height: 24px;
+  background-color: var(--color-10);
+  color: var(--color-30);
+  border: 1px solid var(--color-30);
+}
+.table-button:hover{
+  background-color: var(--color-30);
+  color: var(--color-10);
+  border: 1px solid var(--color-30);
+}
+.page-functions{
+  width: 100%;
+  height: 40px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+.page-function{
+  background-color: var(--color-10);
+  color: var(--color-60);
+  padding: 8px;
+}
+.table-function{
+  width: 100px;
+  margin: 0 2px;
+  font-weight: 400;
+  background-color: transparent;
+  border: 1px solid var(--color-30);
+  padding: 4px;
+  color: var(--color-60);
+}
+.table-function:hover{
+  background-color: var(--color-30);
+  color: var(--color-10)
+}
+
+/* SCHEDULES */
+.page-schedules{
+  display: flex;
+  flex-direction: column;
+  width: 140vw;
+  position: relative;
+}
+
+.page-schedules .sched-row{
+  display: flex;
+  flex-direction: row;
+}
+
+.sched-row-titles{
+  position: -webkit-sticky;
+  top: 0;
+  position: sticky;
+  background-color: var(--color-10);
+  z-index: 500;
+}
+.sched-row .sched-title{
+  width: 200px;
+  text-align: center;
+  color: var(--color-60);
+  border-bottom: 1px solid var(--color-60);
+  margin: 2px;
+  background-color: var(--color-10);
+}
+.sched-row .sched-title.sched-title-time{
+  width: 140px;
+}
+.sched-body{
+  display: flex;
+  flex-direction: row;
+}
+.sched-col{
+  position: sticky;
+  left: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.sched-col .sched-cell{
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  width: 140px;
+  height: 100px;
+  background-color: var(--color-10);
+  color: var(--color-30);
+  border: 1px solid var(--color-60);
+  font-size: 16px;
+  font-weight: 400;
+  margin: 2px;
+  padding: 4px;
+}
+.sched-body .sched-content{
+  display: flex;
+  flex-direction: column;
+}
+.sched-body .sched-row .sched-cell{
+  width: 200px;
+  height: 100px;
+  margin: 2px;
+  padding: 4px;
+  color: var(--color-60);
+}
+.sched-row.sched-row-first{
+  margin-top: 16px
+}
+
+.sched-body .sched-row .sched-cell.sched-cell-no-value{
+  border: 1px solid var(--color-10);
+  background-color: transparent;
+  display: flex;
+  justify-content: flex-end!important;
+  align-items: flex-end!important;
+}
+.sched-cell.sched-cell-no-value .sched-cell-function{
+  width: 32px;
+  height: 24px;
+}
+.sched-cell-function{
+  width: 24px;
+  height: 24px;
+  justify-self: flex-end;
+  align-self: flex-end;
+}
+.sched-cell-function:hover{
+  background-color: var(--color-10);
+  color: var(--color-60)
+}
+
+
+.sched-cell.sched-cell-with-value{
+  height: 100%;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 2px;
+}
+.sched-cell .sched-sub-cell{
+  background-color: var(--color-30);
+  color: var(--color-10);
+  width: 100%;
+  border: 1px solid var(--color-60);
+  height: auto;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin: 2px 0;
+}

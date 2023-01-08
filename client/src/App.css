@@ -1,0 +1,10 @@
+.App{
+  position: relative;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.App.App-authed{
+  flex-direction: row;
+}

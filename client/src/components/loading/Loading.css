@@ -1,0 +1,28 @@
+.Loading{
+  background-image: linear-gradient(-135deg, var(--color-10), var(--color-30), var(--color-60));
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  display: none;
+}
+
+.Loading.loading-shown{
+  display: flex;
+}
+
+.Loading.loading-shown .loading-text{
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden; 
+   font-family: "Courier";
+  font-size: 40px;
+  margin: 10px 0 0 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 30em;
+}

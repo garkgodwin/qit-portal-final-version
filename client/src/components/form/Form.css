@@ -1,0 +1,99 @@
+.Form{
+  position: absolute;
+  z-index: 1002;
+  width: 640px;
+  height: 400px;
+  background-color: var(--color-60);
+  box-shadow: 0 0 8px black;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: space-between;
+  bottom: -100%;
+  transition: all 0.3s ease-in-out;
+  padding: 8px;
+  border-radius: 8px;
+}
+.Form.form-shown{
+  bottom: 40px;
+  left: 40px;
+  overflow: hidden;
+}
+.Form.form-shown .form-loading{
+  background-color: rgba(0,0,0,0.8);
+  color: var(--color-30);
+  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: -100%;
+  transition: all 0.1s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 24px;
+}
+.form-loading.form-loading-shown{
+  background-color: gray;
+  top: 0 !important;
+}
+
+
+.Form .form-functions{
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 100%;
+}
+.Form .form-functions .form-function{
+  background-color: var(--color-30);
+  padding: 8px;
+  margin: 8px;
+}
+.Form .form-functions .form-function:hover{
+  background-color: var(--color-10);
+  color: var(--color-60)
+}
+
+
+.Form .form-body{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+}
+.Form .form-body .form-fields{
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.form-fields .form-field{
+  display: flex;
+  flex-direction: column;
+  margin: 2px;
+  width: 200px;
+}
+.form-fields .form-field.form-field-100{
+  width: 100%;
+}
+.form-field label{
+  font-size: 12px;
+}
+.form-field select{
+  height: auto;
+  min-height: 24px;
+}
+.form-field select option{
+  padding: 4px;
+}
+.form-field input{
+  padding: 0 8px;
+  border: none;
+  border-bottom: 1px solid var(--color-10);
+  color: var(--color-10);
+  height: 24px;
+}

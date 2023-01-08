@@ -1,0 +1,114 @@
+.Sidebar{
+  width: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 8px;
+}
+
+.sidebar-brand{
+  width: 240px;
+  height: 100px;
+  display: flex;
+  flex: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.sidebar-brand .sidebar-brand-logo{
+  width: 40px;
+  height: 40px;
+}
+
+.sidebar-navs-box{
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 40px 0;
+  align-items: center;
+}
+
+.sidebar-navs-box .sidebar-navs-school{
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+.sidebar-navs{
+  width: 90%;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid var(--color-60);
+}
+
+.sidebar-navs-title{
+  font-size: 18px;
+  text-align: start;
+  width: 100%;
+  color: var(--color-10);
+}
+.sidebar-nav-link{
+  background: linear-gradient(45deg, var(--color-60), var(--color-30));
+  width: 100%;
+  font-size: 16px;
+  padding: 8px;
+  margin-top: 4px;
+  color: var(--color-10);
+  transition: all .2s ease-in-out;
+  font-weight: 600;
+}
+.sidebar-nav-link.sidebar-nav-link-active{
+  background-position: 120px;
+}
+.sidebar-nav-link:hover{
+  background-position: 100px;
+
+}
+
+
+.sidebar-bottom{
+  width: 100%;
+  height: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-10);
+  opacity: 0.9;
+  color: var(--color-60);
+}
+.sidebar-bottom .sidebar-current{
+  border: 1px solid var(--color-30);
+  color: var(--color-60);
+  padding: 4px;
+  text-align: center;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.sidebar-bottom .sidebar-current:hover{
+  background-color: var(--color-30);
+  border: 1px solid var(--color-60);
+  color: var(--color-10)
+}
+.sidebar-bottom .sidebar-profile{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.sidebar-bottom .sidebar-profile span{
+  font-size: 12px;
+}
+.sidebar-bottom .sidebar-profile .sidebar-function{
+  width: 100%;
+  background-color: var(--color-60  );
+  padding: 4px;
+  font-size: 14px;
+  color: var(--color-10);
+  font-weight: bold;
+}
+.sidebar-bottom .sidebar-profile .sidebar-function:hover{
+  background-color: var(--color-60  );
+  background-color: var(--color-30);
+}
