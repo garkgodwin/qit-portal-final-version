@@ -36,7 +36,7 @@ exports.MobileUnique = async (req, res, next) => {
   const person = req.body.person;
   const personID = req.params.personID;
   const mobileNumber = person.mobileNumber;
-
+  return next();
   if (!mobileNumber || mobileNumber === "") {
     return res.status(404).send({
       message: "Please fill in the email field.",
