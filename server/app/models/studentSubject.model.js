@@ -20,21 +20,105 @@ module.exports = ({ Schema, model }) => {
       },
       grades: {
         prelim: {
-          type: Number,
-          default: 0,
+          quiz: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          activity: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          performance: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          exam: {
+            achieved: Number,
+            total: Number,
+          },
         },
         mid: {
-          type: Number,
-          default: 0,
+          quiz: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          activity: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          performance: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          exam: {
+            achieved: Number,
+            total: Number,
+          },
         },
         prefi: {
-          type: Number,
-          default: 0,
+          quiz: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          activity: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          performance: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          exam: {
+            achieved: Number,
+            total: Number,
+          },
         },
         final: {
-          type: Number,
-          default: 0,
+          quiz: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          activity: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          performance: [
+            {
+              achieved: Number,
+              total: Number,
+            },
+          ],
+          exam: {
+            achieved: Number,
+            total: Number,
+          },
         },
+      },
+      dropped: {
+        type: Boolean,
+        default: false,
       },
       class: {
         type: Schema.Types.ObjectId,

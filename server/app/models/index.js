@@ -9,7 +9,6 @@ db.mongoose = mongoose;
 db.persons = require("./person.model")(mongoose);
 db.users = require("./user.model")(mongoose);
 db.students = require("./student.model")(mongoose);
-db.grades = require("./grade.model")(mongoose);
 db.class = require("./class.model")(mongoose);
 db.schedules = require("./schedule.model")(mongoose);
 db.schoolInfo = require("./schoolInfo.model")(mongoose);

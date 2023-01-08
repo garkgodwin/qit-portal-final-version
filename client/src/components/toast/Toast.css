@@ -5,7 +5,8 @@
   bottom: 24px;
   right: 24px;
   min-width: 200px;
-  max-height: 100px;
+  max-width: 240px;
+  min-height: 100px;
   z-index: 2000;
   padding: 8px;
   border-radius: 8px;

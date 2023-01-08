@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 
 //? GLOBAL STATE
 import { useDispatch, useSelector } from "react-redux";
+import { showToast } from "../../features/toastSlice";
 
 //? API
 import {
   getSubjectsAvailableForThisStudent,
   addSubjectToStudent,
   dropStudentSubject,
+  createGrade,
 } from "../../api/students";
 
 //? ROUTES
@@ -21,7 +23,10 @@ import {
   studentForThisSubject,
   studentLevelText,
 } from "../../helpers/formatSubjects";
-import { showToast } from "../../features/toastSlice";
+
+//? HELPERS
+import { calculateTermGrade } from "../../helpers/calculate";
+import SubjectGradeList from "../../components/list/SubjectGradeList";
 
 const StudentClasses = (props) => {
   const auth = useSelector((state) => state.auth);
@@ -37,11 +42,18 @@ const StudentClasses = (props) => {
   const [formSubjects, setFormSubjects] = useState([]); //? These subject will be used for subject adding
   const [formValues, setFormValues] = useState({
     shown: false,
-    type: 1,
+    type: 1, // 1- add subject// 2- update grade
     loading: false,
   });
   const [formInputs, setFormInputs] = useState({
     subjectCode: "",
+  });
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [formGradeInputs, setFormGradeInputs] = useState({
+    term: 1,
+    type: 1,
+    achieved: 0,
+    total: 0,
   });
 
   useEffect(() => {
@@ -159,13 +171,11 @@ const StudentClasses = (props) => {
 
   const handleSubmit = async () => {
     const id = student._id;
-    console.log(id, formInputs);
     setFormValues({
       ...formValues,
       loading: true,
     });
     const result = await addSubjectToStudent(id, formInputs);
-    console.log(result);
     setFormValues({
       ...formValues,
       loading: false,
@@ -198,10 +208,10 @@ const StudentClasses = (props) => {
 
   const getTotal = (grades) => {
     let total = 0;
-    const prelim = grades.prelim * 0.2;
-    const mid = grades.mid * 0.2;
-    const prefi = grades.prefi * 0.2;
-    const final = grades.final * 0.5;
+    const prelim = calculateTermGrade(grades.prelim) * 0.2;
+    const mid = calculateTermGrade(grades.mid) * 0.2;
+    const prefi = calculateTermGrade(grades.prefi) * 0.2;
+    const final = calculateTermGrade(grades.final) * 0.5;
     total = prelim + mid + prefi + final;
     return total;
   };
@@ -220,6 +230,65 @@ const StudentClasses = (props) => {
         })
       );
     }
+  };
+
+  //? GRADES
+  const handleGradeUpdate = async (subjectID) => {
+    setFormValues({
+      ...formValues,
+      shown: true,
+      type: 2,
+    });
+    setSelectedSubject(subjectID);
+  };
+
+  const handleSubmitGrade = async () => {
+    const studentID = student._id;
+    if (formGradeInputs.achieved === "") {
+      dispatch(
+        showToast({
+          body: "Please make sure you enter an achieved value",
+        })
+      );
+      return;
+    }
+    if (formGradeInputs.total === "") {
+      dispatch(
+        showToast({
+          body: "Please make sure you enter a total value",
+        })
+      );
+      return;
+    }
+    setFormValues({
+      ...formValues,
+      loading: true,
+    });
+    const result = await createGrade(
+      studentID,
+      selectedSubject,
+      formGradeInputs
+    );
+    dispatch(
+      showToast({
+        body: result.message,
+      })
+    );
+    if (result.status === 200) {
+      const d = result.data;
+      setSubjects(
+        subjects.map((sub) => {
+          if (sub._id === d._id) {
+            sub = d;
+            return sub;
+          }
+        })
+      );
+    }
+    setFormValues({
+      ...formValues,
+      loading: false,
+    });
   };
   return (
     <>
@@ -251,7 +320,9 @@ const StudentClasses = (props) => {
               <th>Prefi</th>
               <th>Final</th>
               <th>Total</th>
-              {auth.user.role === 2 && <th>Action</th>}
+              {(auth.user.role === 2 || auth.user.role === 1) && (
+                <th>Action</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -262,12 +333,12 @@ const StudentClasses = (props) => {
                   <td>{cls.subjectCode}</td>
                   <td>{cls.subjectName}</td>
                   <td>{cls.schedules || "No schedule yet"}</td>
-                  <td>{cls.grades.prelim}</td>
-                  <td>{cls.grades.prelim}</td>
-                  <td>{cls.grades.prelim}</td>
-                  <td>{cls.grades.prelim}</td>
+                  <td>{calculateTermGrade(cls.grades.prelim).toString()}</td>
+                  <td>{calculateTermGrade(cls.grades.mid).toString()}</td>
+                  <td>{calculateTermGrade(cls.grades.prefi).toString()}</td>
+                  <td>{calculateTermGrade(cls.grades.final).toString()}</td>
                   <td>{getTotal(cls.grades)}</td>
-                  {auth.user.role === 2 && (
+                  {(auth.user.role === 2 || auth.user.role === 1) && (
                     <td>
                       <button
                         className="table-function"
@@ -278,6 +349,15 @@ const StudentClasses = (props) => {
                       >
                         Drop
                       </button>
+                      <button
+                        className="table-function"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleGradeUpdate(cls._id);
+                        }}
+                      >
+                        Update Grade
+                      </button>
                     </td>
                   )}
                 </tr>
@@ -286,51 +366,145 @@ const StudentClasses = (props) => {
           </tbody>
         </table>
       </div>
-      <Form
-        shown={formValues.shown}
-        loading={formValues.loading}
-        handleSubmit={handleSubmit}
-        handleCancel={handleCancel}
-      >
-        <div className="form-body">
-          <div className="form-title">
-            {formValues.type === 1
-              ? "Student subject adding form"
-              : formValues.type === 2
-              ? "Student subject update form"
-              : "Student subject form"}
-          </div>
-          <div className="form-fields">
-            <div className="form-field form-field-100">
-              <label>Choose a subject</label>
-              <select
-                size={12}
-                value={formInputs.subjectCode}
-                onChange={(e) => {
-                  setFormInputs({
-                    ...formInputs,
-                    subjectCode: e.target.value,
-                  });
-                }}
-              >
-                {formSubjects.map((subject) => {
-                  return (
-                    <option key={subject.code} value={subject.code}>
-                      {studentForThisSubject(subject.student) +
-                        " : " +
-                        studentLevelText(subject.level) +
-                        " : " +
-                        semester(subject.semester) +
-                        " : " +
-                        subject.name}
-                    </option>
-                  );
-                })}
-              </select>
+      {formValues.type === 1 ? (
+        <Form
+          shown={formValues.shown}
+          loading={formValues.loading}
+          handleSubmit={handleSubmit}
+          handleCancel={handleCancel}
+        >
+          <div className="form-body">
+            <div className="form-title">
+              {formValues.type === 1
+                ? "Student subject adding form"
+                : formValues.type === 2
+                ? "Student subject update form"
+                : "Student subject form"}
+            </div>
+            <div className="form-fields">
+              <div className="form-field form-field-100">
+                <label>Choose a subject</label>
+                <select
+                  size={12}
+                  value={formInputs.subjectCode}
+                  onChange={(e) => {
+                    setFormInputs({
+                      ...formInputs,
+                      subjectCode: e.target.value,
+                    });
+                  }}
+                >
+                  {formSubjects.map((subject) => {
+                    return (
+                      <option key={subject.code} value={subject.code}>
+                        {studentForThisSubject(subject.student) +
+                          " : " +
+                          studentLevelText(subject.level) +
+                          " : " +
+                          semester(subject.semester) +
+                          " : " +
+                          subject.name}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-      </Form>
+        </Form>
+      ) : formValues.type === 2 ? (
+        <Form
+          shown={formValues.shown}
+          loading={formValues.loading}
+          handleCancel={handleCancel}
+          handleSubmit={handleSubmitGrade}
+        >
+          <div className="form-body">
+            <div className="form-title">Update subject grade</div>
+            <div className="form-fields">
+              <div className="form-field form-field-100">
+                <label>Subject Grades</label>
+                {subjects.map((subject) => {
+                  if (subject._id === selectedSubject) {
+                    return (
+                      <SubjectGradeList
+                        key={subject._id}
+                        grades={subject.grades}
+                      />
+                    );
+                  }
+                })}
+              </div>
+              <div className="form-field form-field-100">
+                <label>Term</label>
+                <select
+                  value={formGradeInputs.term}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      term: val,
+                    });
+                  }}
+                >
+                  <option value={1}>Prelim term</option>
+                  <option value={2}>Mid term</option>
+                  <option value={3}>Prefi term</option>
+                  <option value={4}>Final term</option>
+                </select>
+              </div>
+              <div className="form-field form-field-100">
+                <label>Type</label>
+                <select
+                  value={formGradeInputs.type}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      type: val,
+                    });
+                  }}
+                >
+                  <option value={1}>Quiz</option>
+                  <option value={2}>Activity</option>
+                  <option value={3}>Performance</option>
+                  <option value={4}>Exam</option>
+                </select>
+              </div>
+              <div className="form-field">
+                <label>Achieved</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={formGradeInputs.achieved}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      achieved: val,
+                    });
+                  }}
+                />
+              </div>
+              <div className="form-field">
+                <label>Total</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={formGradeInputs.total}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      total: val,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </Form>
+      ) : null}
       <div className="page-functions">
         <button
           className="page-function"

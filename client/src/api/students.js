@@ -401,3 +401,53 @@ export const dropStudentSubject = async (subjectID) => {
     });
   return result;
 };
+
+export const createGrade = async (studentID, subjectID, data) => {
+  let result = {
+    status: 0,
+    message: "",
+    data: null,
+  };
+
+  const token = localStorage.getItem("token");
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  await api
+    .post(ROOT + `/${studentID}/subjects/${subjectID}/new-grade`, data, config)
+    .then((res) => {
+      const resData = res.data;
+      const data = resData.data;
+      const message = resData.message;
+      const status = res.status;
+      result = {
+        ...result,
+        status: status,
+        message: message,
+        data: data,
+      };
+    })
+    .catch((error) => {
+      const r = error.response;
+      if (r) {
+        const message = r.data.message;
+        const status = r.status;
+        result = {
+          ...result,
+          status: status,
+          message: message,
+        };
+      } else {
+        result = {
+          ...result,
+          status: 500,
+          message: "Something went wrong",
+        };
+      }
+    });
+  return result;
+};

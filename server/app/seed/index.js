@@ -1,6 +1,5 @@
 const db = require("../models");
 const ClassModel = db.class;
-const GradeModel = db.grades;
 const HistoryModel = db.histories;
 const NotificationModel = db.notifications;
 const PersonModel = db.persons;
@@ -23,7 +22,6 @@ exports.startSeed = async () => {
 const clearAllCollections = async () => {
   console.log("System: clearing all collections.");
   await ClassModel.collection.drop();
-  await GradeModel.collection.drop();
   await HistoryModel.collection.drop();
   await NotificationModel.collection.drop();
   await PersonModel.collection.drop();

@@ -76,5 +76,16 @@ module.exports = function (app) {
     ],
     controller.updateStudent
   );
+
+  router.post(
+    "/:studentID/subjects/:subjectID/new-grade",
+    [
+      authJwt.verifyToken,
+      authJwt.isAdmin,
+      authJwt.isRegistrar,
+      authJwt.isInstructor,
+    ],
+    controller.createGrade
+  );
   app.use("/api/v1/students", router);
 };

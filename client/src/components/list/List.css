@@ -1,0 +1,7 @@
+.List{
+  max-height: 100px;
+  overflow-y: auto;
+  background-color: var(--color-10);
+  color: var(--color-60);
+  padding: 8px;
+}
