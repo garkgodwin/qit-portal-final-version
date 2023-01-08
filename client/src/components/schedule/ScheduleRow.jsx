@@ -2,9 +2,8 @@ import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
 import { timeInRange } from "../../helpers/formatTime";
-import { getSchedulePerDayAndTime } from "../../api/schedules";
 
-const ScheduleRow = ({ triggerUpdate, time, handleNewSchedule }) => {
+const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
   const [mondays, setMondays] = useState([]);
   const [tuesdays, setTuesdays] = useState([]);
   const [wednesdays, setWednesdays] = useState([]);
@@ -12,48 +11,39 @@ const ScheduleRow = ({ triggerUpdate, time, handleNewSchedule }) => {
   const [fridays, setFridays] = useState([]);
   const [saturdays, setSaturdays] = useState([]);
   const [sundays, setSundays] = useState([]);
-  useEffect(() => {
-    runFetch();
-  }, []);
 
   useEffect(() => {
-    if (triggerUpdate) {
-      runFetch();
-    }
-  }, [triggerUpdate]);
-
-  const runFetch = () => {
-    fetchSchedules(1, time);
-    fetchSchedules(2, time);
-    fetchSchedules(3, time);
-    fetchSchedules(4, time);
-    fetchSchedules(5, time);
-    fetchSchedules(6, time);
-    fetchSchedules(7, time);
-  };
-
-  const fetchSchedules = async (day, time) => {
-    const result = await getSchedulePerDayAndTime(day, time);
-    if (result.status === 200) {
-      if (day === 1) {
-        setMondays(result.data);
-      } else if (day === 2) {
-        setTuesdays(result.data);
-      } else if (day === 3) {
-        setWednesdays(result.data);
-      } else if (day === 4) {
-        setThursdays(result.data);
-      } else if (day === 5) {
-        setFridays(result.data);
-      } else if (day === 6) {
-        setSaturdays(result.data);
-      } else if (day === 7) {
-        setSundays(result.data);
-      } else {
-        return;
+    setMondays([]);
+    setTuesdays([]);
+    setWednesdays([]);
+    setThursdays([]);
+    setFridays([]);
+    setSaturdays([]);
+    setSundays([]);
+    for (let i = 0; i < schedules.length; i++) {
+      const day = schedules[i].day;
+      const timeStart = schedules[i].timeStart;
+      const timeEnd = schedules[i].timeEnd;
+      if (timeInRange(time, timeStart, timeEnd)) {
+        console.log("IN TIME");
+        if (day === 1) {
+          setMondays(...mondays, [schedules[i]]);
+        } else if (day === 2) {
+          setTuesdays(...tuesdays, [schedules[i]]);
+        } else if (day === 3) {
+          setWednesdays(...wednesdays, [schedules[i]]);
+        } else if (day === 4) {
+          setThursdays(...thursdays, [schedules[i]]);
+        } else if (day === 5) {
+          setFridays(...fridays, [schedules[i]]);
+        } else if (day === 6) {
+          setSaturdays(...saturdays, [schedules[i]]);
+        } else if (day === 7) {
+          setSundays(...sundays, [schedules[i]]);
+        }
       }
     }
-  };
+  }, [schedules]);
   return (
     <div className={"sched-row"}>
       {mondays.length === 0 ? (

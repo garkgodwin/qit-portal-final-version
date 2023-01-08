@@ -1,7 +1,9 @@
-export const timeInRange = (time, sStartTime, sEndTime) => {
-  const aTime = time.split(":");
-  const aHTime = parseInt(aTime[0]);
-  if (aHTime === sStartTime || aHTime === sEndTime) {
+export const timeInRange = (time, timeStart, timeEnd) => {
+  // time - 7 , timeStart - 7 timeEnd 8
+  const t = parseInt(time.split(":")[0]);
+  if (t === timeStart || t === timeEnd) {
+    return true;
+  } else if (timeStart <= t && timeEnd >= t) {
     return true;
   }
 };

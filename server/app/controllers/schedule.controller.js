@@ -103,7 +103,9 @@ exports.createSchedule = async (req, res) => {
   //? check if we can create a new schedule
   const schedules = await ScheduleModel.find({
     schoolData: currentSchoolID,
-  }).exec();
+  })
+    .populate({ path: "class" })
+    .exec();
   let canCreate = true;
   let message = "Can create schedule";
   if (schedules.length === 0) {
@@ -117,7 +119,14 @@ exports.createSchedule = async (req, res) => {
         // check if time end is the same above
         // check if sched time start is within time start and time end
         // check if sched time end is within time start and time end
-        if (sched.timeStart < timeStart && sched.timeEnd > timeStart) {
+        if (
+          sched.class.subjectCode === classData.subjectCode &&
+          sched.class.studentType === classData.studentType
+        ) {
+          canCreate = false;
+          message = "Cannot create a schedule of the same subject.";
+          break;
+        } else if (sched.timeStart < timeStart && sched.timeEnd > timeStart) {
           canCreate = false;
           message = "Schedules cannot overlap";
           break;
@@ -133,6 +142,9 @@ exports.createSchedule = async (req, res) => {
           canCreate = false;
           message = "Schedules cannot overlap";
           break;
+        } else if (timeStart === sched.timeStart && timeEnd === sched.timeEnd) {
+          canCreate = false;
+          message = "Schedules cannot overlap";
         } else {
           canCreate = true;
         }
@@ -155,7 +167,6 @@ exports.createSchedule = async (req, res) => {
   });
   await newSched.save();
 
-  console.log(newSched);
   const createdSched = await ScheduleModel.findById(newSched._id)
     .populate({
       path: "class",

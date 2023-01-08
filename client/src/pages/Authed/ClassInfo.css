@@ -29,6 +29,7 @@
 }
 .class-instructor p{
   font-size: 24px;
+  text-align: center;
 }
 .class-instructor span, .class-student span{
   font-size: 12px;

@@ -135,7 +135,7 @@ const Accounts = () => {
                   <td>{acc.username}</td>
                   <td>{acc.email}</td>
                   <td>{getRoleText(acc.role)}</td>
-                  <td>{acc.locked ? "Inactive" : "Active"}</td>
+                  <td>{acc.activated ? "Activated" : "Unactivated"}</td>
                 </tr>
               );
             })}

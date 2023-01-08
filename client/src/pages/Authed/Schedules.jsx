@@ -18,8 +18,8 @@ import Filter from "../../components/filter/Filter";
 import ScheduleRow from "../../components/schedule/ScheduleRow";
 
 const Schedules = () => {
-  const [triggerUpdate, setTriggerUpdate] = useState(false);
   const dispatch = useDispatch();
+  const [schedules, setSchedules] = useState([]);
   const [filteredSchedules, setFilteredSchedules] = useState([]);
   const [filterValues, setFilterValues] = useState({
     text: "", // subject code / class
@@ -50,12 +50,8 @@ const Schedules = () => {
   useEffect(() => {
     fetchSchoolConstants();
     handleGetClasses();
+    getAllSchedules();
   }, []);
-  useEffect(() => {
-    if (triggerUpdate) {
-      setTriggerUpdate(false);
-    }
-  }, [triggerUpdate]);
 
   const fetchSchoolConstants = async () => {
     const result = await getAllSchoolConstants();
@@ -67,6 +63,12 @@ const Schedules = () => {
     }
   };
 
+  const getAllSchedules = async () => {
+    const result = await getSchedules();
+    if (result.status === 200) {
+      setSchedules(result.data);
+    }
+  };
   const handleGetClasses = async () => {
     const result = await getClasses();
     if (result.status === 200) {
@@ -112,7 +114,7 @@ const Schedules = () => {
         })
       );
       if (result.status === 200) {
-        setTriggerUpdate(true);
+        setSchedules([...schedules, result.data]);
         setFormValues({
           ...formValues,
           loading: false,
@@ -155,8 +157,8 @@ const Schedules = () => {
               {TIMES.map((time, index) => {
                 return (
                   <ScheduleRow
+                    schedules={schedules}
                     key={index}
-                    triggerUpdate={triggerUpdate}
                     time={time}
                     handleNewSchedule={handleNewSchedule}
                   />
