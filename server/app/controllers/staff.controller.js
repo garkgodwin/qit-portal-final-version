@@ -45,13 +45,13 @@ exports.createStaff = async (req, res) => {
   newPerson.user = newUser._id;
   await newUser.save();
   await newPerson.save();
-  await createHistory("created a new staff", false, req.userId);
+  const d = new Date().toISOString().substring(0, 10);
   const newNotif = NotificationModel({
     subject: "QIT Portal",
     body: `Please don't share your new OTP: ${newUser.otp}`,
     mobileNumber: newPerson.mobileNumber,
     email: newUser.email,
-    shootDate: "Today",
+    shootDate: d,
   });
   await newNotif.save();
 

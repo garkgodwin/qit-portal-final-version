@@ -228,12 +228,15 @@ exports.addGuardian = async (req, res) => {
   await personInfo.save();
   await student.save();
   await createHistory("created a new guardian", false, req.userId);
+  const d = new Date().toISOString().substring(0, 10);
   const newNotif = NotificationModel({
     subject: "QIT Portal",
     body: `Please don't share your new OTP: ${newUser.otp}`,
     mobileNumber: personInfo.mobileNumber,
+    smsSent: false,
     email: personInfo.email,
-    shootDate: "Today",
+    emailSent: false,
+    shootDate: d,
   });
   await newNotif.save();
   const guardian = await UserModel.findById(userInfo._id).populate({
@@ -269,16 +272,17 @@ exports.createStudent = async (req, res) => {
   await newUser.save();
   await newPerson.save();
   await newStudent.save();
-  await createHistory("created a new student", false, req.userId);
+  const d = new Date().toISOString().substring(0, 10);
   const newNotif = NotificationModel({
     subject: "QIT Portal",
     body: `Please don't share your new OTP: ${newUser.otp}`,
-    mobileNumber: newPerson.mobileNumber,
-    email: newUser.email,
-    shootDate: "Today",
+    mobileNumber: personInfo.mobileNumber,
+    smsSent: false,
+    email: personInfo.email,
+    emailSent: false,
+    shootDate: d,
   });
   await newNotif.save();
-
   const createdStudent = await StudentModel.findById(newStudent._id)
     .populate({
       path: "person",

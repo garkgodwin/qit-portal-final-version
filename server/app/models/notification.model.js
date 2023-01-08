@@ -5,7 +5,11 @@ module.exports = ({ Schema, model }) => {
       body: String,
       mobileNumber: String,
       email: String,
-      sent: {
+      smsSent: {
+        type: Boolean,
+        default: false,
+      },
+      emailSent: {
         type: Boolean,
         default: false,
       },
