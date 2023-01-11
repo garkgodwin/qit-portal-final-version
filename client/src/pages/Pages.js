@@ -11,11 +11,7 @@ const Pages = () => {
   const auth = useSelector((state) => state.auth);
   useEffect(() => {
     if (auth.user === null) {
-      if (location.pathname === "/login") {
-        setPageCls("Page page-login");
-      } else {
-        setPageCls("Page");
-      }
+      setPageCls("Page");
     } else {
       setPageCls("Page page-authed");
     }
@@ -23,11 +19,7 @@ const Pages = () => {
 
   useEffect(() => {
     if (auth.user === null) {
-      if (location.pathname === "/login") {
-        setPageCls("Page page-login");
-      } else {
-        setPageCls("Page");
-      }
+      setPageCls("Page");
     } else {
       setPageCls("Page page-authed");
     }

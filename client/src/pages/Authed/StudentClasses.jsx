@@ -159,13 +159,21 @@ const StudentClasses = (props) => {
     }
   };
   const handleAddSubject = () => {
-    if (!student) {
-      return;
+    if (auth.user.role !== 2) {
+      dispatch(
+        showToast({
+          body: "Only registrar can add subject to the student.",
+        })
+      );
     } else {
-      setFormValues({
-        ...formValues,
-        shown: true,
-      });
+      if (!student) {
+        return;
+      } else {
+        setFormValues({
+          ...formValues,
+          shown: true,
+        });
+      }
     }
   };
 
@@ -506,15 +514,19 @@ const StudentClasses = (props) => {
         </Form>
       ) : null}
       <div className="page-functions">
-        <button
-          className="page-function"
-          onClick={(e) => {
-            e.preventDefault();
-            handleAddSubject();
-          }}
-        >
-          Add subject
-        </button>
+        {(auth.user.role === 1 ||
+          auth.user.role === 2 ||
+          auth.user.role === 3) && (
+          <button
+            className="page-function"
+            onClick={(e) => {
+              e.preventDefault();
+              handleAddSubject();
+            }}
+          >
+            Add subject
+          </button>
+        )}
       </div>
     </>
   );

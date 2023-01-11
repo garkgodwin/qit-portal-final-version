@@ -9,6 +9,11 @@ module.exports = function (app) {
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.getAllSchoolInfos
   );
+  router.get(
+    "/current",
+    [authJwt.verifyToken, check.SchoolHasCurrent],
+    controller.getCurrent
+  );
   router.post(
     "/",
     [authJwt.verifyToken, authJwt.isAdmin, check.SchoolAndSemUnique],

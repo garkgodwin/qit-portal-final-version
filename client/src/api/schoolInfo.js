@@ -40,7 +40,6 @@ export const getAllSchoolInfos = async () => {
     });
   return result;
 };
-
 export const createSchoolInfo = async (data) => {
   let result = {
     status: 0,

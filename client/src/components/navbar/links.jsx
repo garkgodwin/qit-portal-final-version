@@ -12,7 +12,7 @@ const linksGeneral = [
   {
     to: "/staffs",
     text: "Staffs",
-    access: [1, 2],
+    access: [1],
   },
   {
     to: "/students",
@@ -30,7 +30,7 @@ const linksSchool = [
   {
     to: "/subjects",
     text: "Subjects",
-    access: [1, 2, 3],
+    access: [1, 2, 3, 4, 5],
   },
   {
     to: "/classes",

@@ -15,9 +15,13 @@ const Sidebar = () => {
   const location = useLocation();
   const auth = useSelector((state) => state.auth);
 
+  useEffect(() => {
+    fetchCurrentSchoolInfo();
+  }, []);
   const fetchCurrentSchoolInfo = async () => {
     const result = await getCurrentSchoolInfo();
-    if (result.status === 2000) {
+    console.log(result);
+    if (result.status === 200) {
       setCurrent(result.data);
     }
   };
@@ -80,11 +84,8 @@ const Sidebar = () => {
             handleGoToSchoolInfo();
           }}
         >
-          <p>
-            {current
-              ? current.sy + " " + getSemester(current.sem)
-              : "No current SY and Semester"}
-          </p>
+          {current && <p>{current.sy + " " + getSemester(current.sem)}</p>}
+          {!current && <p>No current SY and Semester</p>}
         </div>
         <div className="sidebar-profile">
           <p>{auth ? auth.user.person.name : "No name"}</p>

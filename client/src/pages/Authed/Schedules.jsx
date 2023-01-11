@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 //? GLOBAL STATE
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../features/toastSlice";
 
 //? API
@@ -18,6 +18,7 @@ import Filter from "../../components/filter/Filter";
 import ScheduleRow from "../../components/schedule/ScheduleRow";
 
 const Schedules = () => {
+  const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [schedules, setSchedules] = useState([]);
   const [filteredSchedules, setFilteredSchedules] = useState([]);

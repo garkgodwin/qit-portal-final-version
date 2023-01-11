@@ -48,7 +48,7 @@ const Login = () => {
     dispatch(stopLoading());
   };
   return (
-    <>
+    <div className="page-login">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -99,7 +99,7 @@ const Login = () => {
           </button>
         </div>
       </form>
-    </>
+    </div>
   );
 };
 

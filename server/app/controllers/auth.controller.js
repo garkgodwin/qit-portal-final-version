@@ -33,6 +33,12 @@ exports.authenticate = async (req, res) => {
 
 exports.login = async (req, res) => {
   const b = req.body;
+
+  if (!b.username || b.username === "") {
+    return res.status(409).send({
+      message: "Please enter your username",
+    });
+  }
   let user = await User.findOne({
     username: b.username,
   })
@@ -54,6 +60,16 @@ exports.login = async (req, res) => {
     });
   }
 
+  if (!b.password || b.password === "") {
+    return res.status(409).send({
+      message: "Please enter your password",
+    });
+  }
+  if (!user.password) {
+    return res.status(500).send({
+      message: "Something went wrong",
+    });
+  }
   const passwordIsValid = bcrypt.compareSync(b.password, user.password);
   if (!passwordIsValid) {
     return res.status(401).send({

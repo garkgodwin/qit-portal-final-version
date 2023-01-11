@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 //? GLOBAL STATE
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../features/toastSlice";
 
 //? ROUTE
@@ -25,6 +25,7 @@ import {
 } from "../../helpers/formatSubjects";
 
 const Students = () => {
+  const auth = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [schoolConstants, setSchoolConstants] = useState({
@@ -343,15 +344,17 @@ const Students = () => {
                   <td>{student.section}</td>
                   <td>{1}</td>
                   <td>
-                    <button
-                      className="table-function"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleViewGuardian(student._id);
-                      }}
-                    >
-                      Guardian
-                    </button>
+                    {auth.user.role === 1 && (
+                      <button
+                        className="table-function"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleViewGuardian(student._id);
+                        }}
+                      >
+                        Guardian
+                      </button>
+                    )}
                     <button
                       className="table-function"
                       onClick={(e) => {

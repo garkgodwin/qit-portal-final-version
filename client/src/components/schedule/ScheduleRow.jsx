@@ -1,9 +1,11 @@
 import React from "react";
 import { useEffect } from "react";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 import { timeInRange } from "../../helpers/formatTime";
 
-const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
+const ScheduleRow = ({ schedules, time, handleNewSchedule }) => {
+  const auth = useSelector((state) => state.auth);
   const [mondays, setMondays] = useState([]);
   const [tuesdays, setTuesdays] = useState([]);
   const [wednesdays, setWednesdays] = useState([]);
@@ -48,15 +50,17 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
     <div className={"sched-row"}>
       {mondays.length === 0 ? (
         <div className="sched-cell sched-cell-no-value">
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       ) : (
         <div className="sched-cell sched-cell-with-value">
@@ -69,28 +73,32 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
               </div>
             );
           })}
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       )}
       {tuesdays.length === 0 ? (
         <div className="sched-cell sched-cell-no-value">
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       ) : (
         <div className="sched-cell sched-cell-with-value">
@@ -103,29 +111,33 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
               </div>
             );
           })}
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       )}
 
       {wednesdays.length === 0 ? (
         <div className="sched-cell sched-cell-no-value">
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       ) : (
         <div className="sched-cell sched-cell-with-value">
@@ -138,29 +150,33 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
               </div>
             );
           })}
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       )}
 
       {thursdays.length === 0 ? (
         <div className="sched-cell sched-cell-no-value">
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       ) : (
         <div className="sched-cell sched-cell-with-value">
@@ -173,29 +189,33 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
               </div>
             );
           })}
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       )}
 
       {fridays.length === 0 ? (
         <div className="sched-cell sched-cell-no-value">
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       ) : (
         <div className="sched-cell sched-cell-with-value">
@@ -208,29 +228,33 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
               </div>
             );
           })}
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       )}
 
       {saturdays.length === 0 ? (
         <div className="sched-cell sched-cell-no-value">
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       ) : (
         <div className="sched-cell sched-cell-with-value">
@@ -243,29 +267,33 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
               </div>
             );
           })}
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       )}
 
       {sundays.length === 0 ? (
         <div className="sched-cell sched-cell-no-value">
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       ) : (
         <div className="sched-cell sched-cell-with-value">
@@ -278,15 +306,17 @@ const ScheduleRow = ({ schedules, triggerUpdate, time, handleNewSchedule }) => {
               </div>
             );
           })}
-          <button
-            className="sched-cell-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNewSchedule();
-            }}
-          >
-            +
-          </button>
+          {(auth.user.role === 1 || auth.user.role === 2) && (
+            <button
+              className="sched-cell-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNewSchedule();
+              }}
+            >
+              +
+            </button>
+          )}
         </div>
       )}
     </div>

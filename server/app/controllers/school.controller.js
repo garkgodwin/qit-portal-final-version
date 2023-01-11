@@ -10,7 +10,14 @@ exports.getAllSchoolInfos = async (req, res) => {
     data: infos,
   });
 };
-
+exports.getCurrent = async (req, res) => {
+  const id = req.currentSchoolID;
+  const current = await SchoolInfoModel.findById(id);
+  return res.status(200).send({
+    message: "Successfully retrieved the current school data",
+    data: current,
+  });
+};
 exports.getSchoolInfoDetails = async (req, res) => {
   const schoolID = req.params.schoolID;
   if (!schoolID) {

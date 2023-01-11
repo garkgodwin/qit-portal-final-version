@@ -19,9 +19,15 @@
 }
 
 /* FOR LOGIN */
+.page-login{
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .page-login form{
-  height: 400px;
-  width: 400px;
+  height: 400px !important;
+  width: 400px !important;
   box-shadow: 0 0 8px;
   border-radius: 8px;
   padding: 8px;
