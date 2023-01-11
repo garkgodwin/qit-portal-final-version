@@ -4,10 +4,23 @@ const StudentModel = db.students;
 const ClassModel = db.class;
 const { createHistory } = require("./history.controller");
 exports.getAllSchoolInfos = async (req, res) => {
-  const infos = await SchoolInfoModel.find({}).exec();
+  const infos = await SchoolInfoModel.find({}).lean();
+  let newInfos = [];
+  for (let i = 0; i < infos.length; i++) {
+    let info = infos[i];
+    const sc = await StudentModel.find({
+      schoolInfo: info._id,
+    }).count();
+    const cc = await ClassModel.find({
+      schoolInfo: info._id,
+    }).count();
+    info.numberOfStudents = sc;
+    info.numberOfClasses = cc;
+    newInfos.push(info);
+  }
   return res.status(200).send({
     message: "Successful",
-    data: infos,
+    data: newInfos,
   });
 };
 exports.getCurrent = async (req, res) => {
@@ -48,6 +61,19 @@ exports.getSchoolInfoDetails = async (req, res) => {
     },
   });
 };
+exports.getSchoolInfoForUpdate = async (req, res) => {
+  const schoolID = req.params.schoolID;
+  if (!schoolID) {
+    return res.status(404).send({
+      message: "Please select a school information",
+    });
+  }
+  const school = await SchoolInfoModel.findById(schoolID).exec();
+  return res.status(200).send({
+    message: "Successful",
+    data: school,
+  });
+};
 
 exports.createSchoolInfo = async (req, res) => {
   const body = req.body;
@@ -84,8 +110,11 @@ exports.updateSchoolInfo = async (req, res) => {
     false,
     req.userId
   );
+  await require("./notification.controller").createAndSendNotifications7days(
+    "update"
+  );
   return res.status(200).send({
-    message: "Successfully created a school info",
+    message: "Successfully update the current school info",
     data: schoolInfo,
   });
 };

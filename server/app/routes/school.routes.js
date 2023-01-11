@@ -19,8 +19,13 @@ module.exports = function (app) {
     [authJwt.verifyToken, authJwt.isAdmin, check.SchoolAndSemUnique],
     controller.createSchoolInfo
   );
+  router.get(
+    "/:schoolID/for-update",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getSchoolInfoForUpdate
+  );
   router.put(
-    "/:schoolID",
+    "/:schoolID/for-update",
     [authJwt.verifyToken, authJwt.isAdmin, check.SchoolAndSemUnique],
     controller.updateSchoolInfo
   );

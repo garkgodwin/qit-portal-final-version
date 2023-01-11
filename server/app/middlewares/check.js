@@ -36,12 +36,13 @@ exports.MobileUnique = async (req, res, next) => {
   const person = req.body.person;
   const personID = req.params.personID;
   const mobileNumber = person.mobileNumber;
-  return next();
   if (!mobileNumber || mobileNumber === "") {
     return res.status(404).send({
       message: "Please fill in the email field.",
     });
   }
+
+  return next();
   let filter = {
     mobileNumber: mobileNumber,
   };
@@ -97,6 +98,7 @@ exports.EmailUnique = async (req, res, next) => {
       message: "Please fill in the email field.",
     });
   }
+  return next();
   let filter = {
     email: email,
   };
@@ -162,7 +164,9 @@ exports.SchoolAndSemUnique = async (req, res, next) => {
   if (schoolID) {
     filter = {
       ...filter,
-      _id: schoolID,
+      _id: {
+        $ne: schoolID,
+      },
     };
   }
   const semSyExists = await SchoolInfoModel.findOne(filter).exec();

@@ -264,7 +264,6 @@ exports.createStudent = async (req, res) => {
   const newUser = UserModel(user);
   const newPerson = PersonModel(person);
   const newStudent = StudentModel(student);
-
   newUser.person = newPerson._id;
   newUser.otp = generateOtp();
   newUser.role = 4;

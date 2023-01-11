@@ -41,7 +41,7 @@ exports.calculateTermGrade = (tg) => {
     } else {
       te = (e.achieved / e.total) * 100;
     }
-    const total = Math.round(tq * 0.2 + ta * 0.2 + tp * 0.2 + te * 0.4).toFixed(
+    const total = Math.round(tq * 0.2 + ta * 0.2 + tp * 0.1 + te * 0.5).toFixed(
       2
     );
     return total;

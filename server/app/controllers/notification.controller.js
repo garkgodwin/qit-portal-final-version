@@ -55,17 +55,18 @@ exports.getAndSendEmailNotifications = async () => {
       }
     }
     if (data.length > 0) {
-      console.log("Sent all unsent notifications");
+      console.log("No more email notifications to be sent");
     }
   }, 10000);
 };
 
-exports.createAndSendNotifications7days = async () => {
+exports.createAndSendNotifications7days = async (actionType) => {
   console.log("Create notif based on school info endDate");
   const school = await SchoolInfoModel.findOne({
     current: true,
     locked: false,
   }).exec();
+  let type = actionType ? actionType : "create";
   let shootDate = new Date(Date.parse(school.endDate));
   shootDate = new Date(shootDate.setDate(shootDate.getDate() - 8))
     .toISOString()
@@ -97,48 +98,133 @@ exports.createAndSendNotifications7days = async () => {
       let guardianUser = student.guardian;
       const totalStudentGrade = await getStudentCurrentGrade(student._id);
       console.log("Create notif for student and his/her guardian");
-      if (!studentUser.semesterNotification) {
-        let message = "";
-        if (totalStudentGrade < 55) {
-          message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
-        } else {
-          message = `Congratulations! Your grade is ${totalStudentGrade}!`;
+      if (type === "create") {
+        if (!studentUser.semesterNotification) {
+          let message = "";
+          if (totalStudentGrade < 55) {
+            message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
+          } else {
+            message = `Congratulations! Your grade is ${totalStudentGrade}!`;
+          }
+          const newNotifStudent = NotificationModel({
+            subject: "QIT Portal",
+            body: `Good day ${student.person.name}! ${message}`,
+            mobileNumber: studentPerson.mobileNumber,
+            smsSent: false,
+            email: studentUser.email,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          studentUser.semesterNotification = newNotifStudent._id;
+          await newNotifStudent.save();
+          await studentUser.save();
         }
-        const newNotifStudent = NotificationModel({
-          subject: "QIT Portal",
-          body: `Good day ${student.person.name}! ${message}`,
-          mobileNumber: studentPerson.mobileNumber,
-          smsSent: false,
-          email: studentUser.email,
-          emailSent: false,
-          shootDate: shootDate,
-        });
-        studentUser.semesterNotification = newNotifStudent._id;
-        await newNotifStudent.save();
-        await studentUser.save();
-      }
-      //? GUARDIAN NOTIF
-      if (guardianUser && !guardianUser.semesterNotification) {
-        let message = "";
-        if (totalStudentGrade < 55) {
-          message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
-        } else {
-          message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
+        //? GUARDIAN NOTIF
+        if (guardianUser && !guardianUser.semesterNotification) {
+          let message = "";
+          if (totalStudentGrade < 55) {
+            message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
+          } else {
+            message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
+          }
+          const newNotif = NotificationModel({
+            subject: "QIT Portal",
+            body: `Good day ${guardianUser.person.name}! ${message}`,
+            mobileNumber: guardianUser.mobileNumber,
+            smsSent: false,
+            email: guardianUser.person.email,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          guardianUser.semesterNotification = newNotif._id;
+          await newNotif.save();
+          await guardianUser.save();
         }
-        const newNotif = NotificationModel({
-          subject: "QIT Portal",
-          body: `Good day ${guardianUser.person.name}! ${message}`,
-          mobileNumber: guardianUser.mobileNumber,
-          smsSent: false,
-          email: guardianUser.person.email,
-          emailSent: false,
-          shootDate: shootDate,
-        });
-        guardianUser.semesterNotification = newNotif._id;
-        await newNotif.save();
-        await guardianUser.save();
-      }
+      } else if (type === "update") {
+        if (!studentUser.semesterNotification) {
+          let message = "";
+          if (totalStudentGrade < 55) {
+            message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
+          } else {
+            message = `Congratulations! Your grade is ${totalStudentGrade}!`;
+          }
+          const newNotifStudent = NotificationModel({
+            subject: "QIT Portal",
+            body: `Good day ${student.person.name}! ${message}`,
+            mobileNumber: studentPerson.mobileNumber,
+            smsSent: false,
+            email: studentUser.email,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          studentUser.semesterNotification = newNotifStudent._id;
+          await newNotifStudent.save();
+          await studentUser.save();
+        }
+        //? GUARDIAN NOTIF
+        if (guardianUser && !guardianUser.semesterNotification) {
+          let message = "";
+          if (totalStudentGrade < 55) {
+            message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
+          } else {
+            message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
+          }
+          const newNotif = NotificationModel({
+            subject: "QIT Portal",
+            body: `Good day ${guardianUser.person.name}! ${message}`,
+            mobileNumber: guardianUser.mobileNumber,
+            smsSent: false,
+            email: guardianUser.person.email,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          guardianUser.semesterNotification = newNotif._id;
+          await newNotif.save();
+          await guardianUser.save();
+        }
 
+        if (studentUser.semesterNotification) {
+          let message = "";
+          if (totalStudentGrade < 55) {
+            message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
+          } else {
+            message = `Congratulations! Your grade is ${totalStudentGrade}!`;
+          }
+          const newNotifStudent = NotificationModel({
+            subject: "QIT Portal",
+            body: `Good day ${student.person.name}! ${message}`,
+            mobileNumber: studentPerson.mobileNumber,
+            smsSent: false,
+            email: studentUser.email,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          studentUser.semesterNotification = newNotifStudent._id;
+          await newNotifStudent.save();
+          await studentUser.save();
+        }
+        //? GUARDIAN NOTIF
+        if (guardianUser && guardianUser.semesterNotification) {
+          let message = "";
+          if (totalStudentGrade < 55) {
+            message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
+          } else {
+            message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
+          }
+          const newNotif = NotificationModel({
+            subject: "QIT Portal",
+            body: `Good day ${guardianUser.person.name}! ${message}`,
+            mobileNumber: guardianUser.mobileNumber,
+            smsSent: false,
+            email: guardianUser.person.email,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          guardianUser.semesterNotification = newNotif._id;
+          await newNotif.save();
+          await guardianUser.save();
+        }
+      }
       // if (studentUser.semesterNotification) {
       //   //? get notification semester
       //   let oldNotif = await NotificationModel.findById(

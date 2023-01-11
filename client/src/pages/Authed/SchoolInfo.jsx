@@ -8,8 +8,10 @@ import {
   getAllSchoolInfos,
   createSchoolInfo,
   updateSchoolInfo,
+  getSchoolInfoForUpdate,
 } from "../../api/schoolInfo";
 
+import { useNavigate } from "react-router-dom";
 //? HELPERS
 
 //? COMPONETS
@@ -17,6 +19,7 @@ import Filter from "../../components/filter/Filter";
 import Form from "../../components/form/Form";
 
 const SchoolInfo = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const [schoolInfos, setSchoolInfos] = useState([]);
   const [filteredSchoolInfos, setFilteredSchoolInfos] = useState([]);
@@ -138,28 +141,60 @@ const SchoolInfo = () => {
         setFormValues({
           shown: false,
           type: 0,
+          loading: false,
         });
       }
     } else {
       //? update
-      const result = await updateSchoolInfo(formInputs); // ? person data only
-      console.log(result);
+      const data = {
+        schoolInfo: formInputs,
+      };
+      const result = await updateSchoolInfo(selectedData, data); // ? person data only
       dispatch(
         showToast({
           body: result.message,
         })
       );
+      if (result.status === 200) {
+        setFormValues({
+          ...formValues,
+          shown: false,
+          loading: false,
+        });
+        navigate("/");
+      }
     }
-    setFormValues({
-      ...formValues,
-      loading: false,
-    });
   };
   const handleCancel = () => {
     setFormValues({
       shown: false,
       type: 0,
     });
+  };
+
+  const handleViewUpdate = async (id) => {
+    setSelectedData(id);
+    const result = await getSchoolInfoForUpdate(id);
+    console.log(result);
+    if (result.status === 200) {
+      const d = result.data;
+      setFormInputs({
+        ...formInputs,
+        sem: d.sem,
+        sy: d.sy,
+        startDate: d.startDate,
+        endDate: d.endDate,
+      });
+      setFormValues({
+        ...formValues,
+        shown: true,
+      });
+    } else {
+      setFormValues({
+        ...formValues,
+        shown: false,
+      });
+    }
   };
   return (
     <>
@@ -180,8 +215,8 @@ const SchoolInfo = () => {
               <th>Locked</th>
               <th>Start Date</th>
               <th>End Date</th>
-              <th>Number of students</th>
-              <th>Number of classes</th>
+              <th># of students</th>
+              <th># of classes</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -200,14 +235,27 @@ const SchoolInfo = () => {
                   <td>{info.numberOfClasses ? info.numberOfClasses : 0}</td>
                   <td>
                     {!info.current && (
-                      <button className="table-button table-button-1">
-                        Move
-                      </button>
+                      <>
+                        <button className="table-button table-button-1">
+                          Move
+                        </button>
+                      </>
                     )}
                     {!info.locked && (
-                      <button className="table-button table-button-2">
-                        Lock
-                      </button>
+                      <>
+                        <button className="table-button table-button-2">
+                          Lock
+                        </button>
+                        <button
+                          className="table-button table-button-1"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleViewUpdate(info._id);
+                          }}
+                        >
+                          Update
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>
@@ -241,7 +289,36 @@ const SchoolInfo = () => {
               ? "School info update form"
               : "School info form"}
           </h4>
-          <div className="form-fields"></div>
+          <div className="form-fields">
+            <div className="form-field">
+              <label>School Year</label>
+              <input type="text" disabled value={formInputs.sy} />
+            </div>
+            <div className="form-field">
+              <label>Semester</label>
+              <input type="text" disabled value={formInputs.sem} />
+            </div>
+
+            <div className="form-field">
+              <label>Start Date</label>
+              <input type="date" disabled value={formInputs.startDate} />
+            </div>
+
+            <div className="form-field">
+              <label>End Date</label>
+              <input
+                type="date"
+                value={formInputs.endDate}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormInputs({
+                    ...formInputs,
+                    endDate: val,
+                  });
+                }}
+              />
+            </div>
+          </div>
         </div>
       </Form>
     </>
