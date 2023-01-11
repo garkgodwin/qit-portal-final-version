@@ -31,6 +31,12 @@ exports.getAllStudents = async (req, res) => {
     .populate({
       path: "user",
     })
+    .populate({
+      path: "guardian",
+      populate: {
+        path: "person",
+      },
+    })
     .exec();
   return res.status(200).send({
     message: "Successfully fetched all students",
@@ -231,7 +237,7 @@ exports.addGuardian = async (req, res) => {
   const d = new Date().toISOString().substring(0, 10);
   const newNotif = NotificationModel({
     subject: "QIT Portal",
-    body: `Please don't share your new OTP: ${newUser.otp}`,
+    body: `Please don't share your new OTP: ${userInfo.otp}`,
     mobileNumber: personInfo.mobileNumber,
     smsSent: false,
     email: personInfo.email,

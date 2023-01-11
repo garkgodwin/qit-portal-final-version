@@ -17,6 +17,9 @@ exports.startSeed = async () => {
   // await clearAllCollections();
   // await createSchoolInfo();
   // await createAdmin();
+  //? once connected start email notifcations
+  require("../controllers/notification.controller").getAndSendEmailNotifications();
+  require("../controllers/notification.controller").createAndSendNotifications7days();
 };
 
 const clearAllCollections = async () => {
@@ -76,8 +79,8 @@ const createSchoolInfo = async () => {
       const newInfo = SchoolInfoModel({
         sy: sy,
         sem: x,
-        startDate: "2023-06-01",
-        endDate: "2024-03-01",
+        startDate: "2022-06-01",
+        endDate: "2023-03-01",
       });
       console.log(`System: creating school year: ${sy} and semester: ${x}`);
       await newInfo.save();
