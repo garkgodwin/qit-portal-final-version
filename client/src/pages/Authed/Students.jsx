@@ -342,7 +342,7 @@ const Students = () => {
                   <td>{student.course}</td>
                   <td>{studentLevelText(student.level)}</td>
                   <td>{student.section}</td>
-                  <td>{1}</td>
+                  <td>{student.guardian ? 1 : 0}</td>
                   <td>
                     {auth.user.role === 1 && (
                       <button
