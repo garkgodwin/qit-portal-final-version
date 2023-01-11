@@ -61,6 +61,7 @@ exports.getAndSendEmailNotifications = async () => {
 };
 
 exports.createAndSendNotifications7days = async () => {
+  console.log("Create notif based on school info endDate");
   const school = await SchoolInfoModel.findOne({
     current: true,
     locked: false,
@@ -70,7 +71,6 @@ exports.createAndSendNotifications7days = async () => {
     .toISOString()
     .substring(0, 10);
   setInterval(async () => {
-    console.log("Create notif based on school info endDate");
     //? find all students and their guardians
     const students = await StudentModel.find({
       schoolInfo: school._id,
@@ -96,6 +96,7 @@ exports.createAndSendNotifications7days = async () => {
       let studentPerson = student.person;
       let guardianUser = student.guardian;
       const totalStudentGrade = await getStudentCurrentGrade(student._id);
+      console.log("Create notif for student and his/her guardian");
       if (!studentUser.semesterNotification) {
         let message = "";
         if (totalStudentGrade < 55) {
