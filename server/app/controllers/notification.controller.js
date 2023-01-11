@@ -83,8 +83,7 @@ exports.createAndSendNotifications7days = async () => {
         // create notif
         console.log("Create notif for student");
       }
-      if (!guardianUser.semesterNotification) {
-        // create notif
+      if (guardianUser && !guardianUser.semesterNotification) {
         console.log("Create notif for student's guardian");
       }
       //? check if there is no notif yet for students and guardians
