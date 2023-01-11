@@ -215,7 +215,7 @@ exports.addGuardian = async (req, res) => {
   }
   if (student.guardian) {
     return res.status(409).send({
-      message: "Cannot add one more guardian",
+      message: "Only one guardian can be added",
     });
   }
   let userInfo = UserModel(userInput);
@@ -276,10 +276,8 @@ exports.createStudent = async (req, res) => {
   const newNotif = NotificationModel({
     subject: "QIT Portal",
     body: `Please don't share your new OTP: ${newUser.otp}`,
-    mobileNumber: personInfo.mobileNumber,
-    smsSent: false,
-    email: personInfo.email,
-    emailSent: false,
+    mobileNumber: newPerson.mobileNumber,
+    email: newPerson.email,
     shootDate: d,
   });
   await newNotif.save();

@@ -30,6 +30,10 @@ module.exports = ({ Schema, model }) => {
         type: Schema.Types.ObjectId,
         ref: "persons",
       },
+      semesterNotification: {
+        type: Schema.Types.ObjectId,
+        ref: "notifications",
+      },
     },
     { timestamps: true }
   );
