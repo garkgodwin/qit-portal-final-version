@@ -7,12 +7,11 @@ exports.NameUnique = async (req, res, next) => {
   const person = req.body.person;
   const personID = req.params.personID;
   const name = person.name;
-  console.log(name);
-  // if (!name || name === "") {
-  //   return res.status(404).send({
-  //     message: "Please fill in the name field.",
-  //   });
-  // }
+  if (!name || name === "") {
+    return res.status(404).send({
+      message: "Please fill in the name field.",
+    });
+  }
   let filter = {
     name: name,
   };
@@ -38,7 +37,7 @@ exports.MobileUnique = async (req, res, next) => {
   const mobileNumber = person.mobileNumber;
   if (!mobileNumber || mobileNumber === "") {
     return res.status(404).send({
-      message: "Please fill in the email field.",
+      message: "Please fill in the mobile number field.",
     });
   }
 
@@ -95,7 +94,7 @@ exports.EmailUnique = async (req, res, next) => {
   const email = user.email;
   if (!email || email === "") {
     return res.status(404).send({
-      message: "Please fill in the email field.",
+      message: "Please fill in the email field LOL.",
     });
   }
   return next();
