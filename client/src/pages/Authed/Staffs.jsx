@@ -85,9 +85,8 @@ const Staffs = () => {
   const handleFilterStaffs = () => {
     let filtered = staffs.filter((person) => {
       return person.name
-        .trim()
         .toLowerCase()
-        .includes(filterValues.text.trim().toLowerCase());
+        .includes(filterValues.text.toLowerCase());
     });
     if (filterValues.selected1 !== "0") {
       filtered = filtered.filter((person) => {
