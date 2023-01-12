@@ -284,6 +284,7 @@ const StudentClasses = (props) => {
     );
     if (result.status === 200) {
       const d = result.data;
+      window.location.reload();
       setSubjects(
         subjects.map((sub) => {
           if (sub._id === d._id) {
@@ -338,7 +339,9 @@ const StudentClasses = (props) => {
               return (
                 <tr key={index}>
                   <td>{index + 1}</td>
-                  <td>{cls.subjectCode}</td>
+                  <td>
+                    {cls.subjectCode ? cls.subjectCode : "No subject code"}
+                  </td>
                   <td>{cls.subjectName}</td>
                   <td>{cls.schedules || "No schedule yet"}</td>
                   <td>{calculateTermGrade(cls.grades.prelim).toString()}</td>

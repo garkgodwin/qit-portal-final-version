@@ -55,11 +55,11 @@ exports.getAndSendEmailNotifications = async () => {
     for (let i = 0; i < data.length; i++) {
       const notif = data[i];
       if (isDateLessThanToday(notif.shootDate)) {
-        console.log("Sending email notification to: " + notif.email);
-        sendEmail(sender, senderPass, notif);
-        await NotificationModel.findByIdAndUpdate(notif._id, {
-          emailSent: true,
-        });
+        if (sendEmail(sender, senderPass, notif)) {
+          await NotificationModel.findByIdAndUpdate(notif._id, {
+            emailSent: true,
+          });
+        }
       }
     }
     if (data.length > 0) {
@@ -105,7 +105,6 @@ exports.createAndSendNotifications7days = async (actionType) => {
       let studentPerson = student.person;
       let guardianUser = student.guardian;
       const totalStudentGrade = await getStudentCurrentGrade(student._id);
-      console.log("Create notif for student and his/her guardian");
       if (type === "create") {
         if (!studentUser.semesterNotification) {
           let message = "";
@@ -129,90 +128,6 @@ exports.createAndSendNotifications7days = async (actionType) => {
         }
         //? GUARDIAN NOTIF
         if (guardianUser && !guardianUser.semesterNotification) {
-          let message = "";
-          if (totalStudentGrade < 55) {
-            message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
-          } else {
-            message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
-          }
-          const newNotif = NotificationModel({
-            subject: "QIT Portal",
-            body: `Good day ${guardianUser.person.name}! ${message}`,
-            mobileNumber: guardianUser.mobileNumber,
-            smsSent: false,
-            email: guardianUser.person.email,
-            emailSent: false,
-            shootDate: shootDate,
-          });
-          guardianUser.semesterNotification = newNotif._id;
-          await newNotif.save();
-          await guardianUser.save();
-        }
-      } else if (type === "update") {
-        if (!studentUser.semesterNotification) {
-          let message = "";
-          if (totalStudentGrade < 55) {
-            message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
-          } else {
-            message = `Congratulations! Your grade is ${totalStudentGrade}!`;
-          }
-          const newNotifStudent = NotificationModel({
-            subject: "QIT Portal",
-            body: `Good day ${student.person.name}! ${message}`,
-            mobileNumber: studentPerson.mobileNumber,
-            smsSent: false,
-            email: studentUser.email,
-            emailSent: false,
-            shootDate: shootDate,
-          });
-          studentUser.semesterNotification = newNotifStudent._id;
-          await newNotifStudent.save();
-          await studentUser.save();
-        }
-        //? GUARDIAN NOTIF
-        if (guardianUser && !guardianUser.semesterNotification) {
-          let message = "";
-          if (totalStudentGrade < 55) {
-            message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
-          } else {
-            message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
-          }
-          const newNotif = NotificationModel({
-            subject: "QIT Portal",
-            body: `Good day ${guardianUser.person.name}! ${message}`,
-            mobileNumber: guardianUser.mobileNumber,
-            smsSent: false,
-            email: guardianUser.person.email,
-            emailSent: false,
-            shootDate: shootDate,
-          });
-          guardianUser.semesterNotification = newNotif._id;
-          await newNotif.save();
-          await guardianUser.save();
-        }
-
-        if (studentUser.semesterNotification) {
-          let message = "";
-          if (totalStudentGrade < 55) {
-            message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
-          } else {
-            message = `Congratulations! Your grade is ${totalStudentGrade}!`;
-          }
-          const newNotifStudent = NotificationModel({
-            subject: "QIT Portal",
-            body: `Good day ${student.person.name}! ${message}`,
-            mobileNumber: studentPerson.mobileNumber,
-            smsSent: false,
-            email: studentUser.email,
-            emailSent: false,
-            shootDate: shootDate,
-          });
-          studentUser.semesterNotification = newNotifStudent._id;
-          await newNotifStudent.save();
-          await studentUser.save();
-        }
-        //? GUARDIAN NOTIF
-        if (guardianUser && guardianUser.semesterNotification) {
           let message = "";
           if (totalStudentGrade < 55) {
             message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
@@ -259,7 +174,7 @@ exports.createAndSendNotifications7days = async (actionType) => {
       //   }
       // }
     }
-  }, 20000);
+  }, 60000);
 };
 
 const getStudentCurrentGrade = async (student, currentSchoolID) => {
@@ -308,24 +223,24 @@ const getStudentCurrentGrade = async (student, currentSchoolID) => {
 };
 
 const isDateLessThanToday = (dateStr) => {
-  const today = new Date().toISOString().substring(0, 10);
-  if (dateStr === today) {
+  const shootDate = new Date(dateStr);
+  const today = new Date();
+  if (shootDate <= today) {
     return true;
   }
   return false;
 };
 
+var transporter = nodemailer.createTransport({
+  host: "gmail",
+  auth: {
+    user: "qitportal@gmail.com",
+    pass: "**Qwerty123**",
+  },
+});
+
 const sendEmail = async (sender, senderPass, notification) => {
   let flag = false;
-  var transporter = nodemailer.createTransport({
-    service: "gmail",
-    secure: false,
-    port: 587,
-    auth: {
-      user: sender,
-      pass: senderPass,
-    },
-  });
   var mailOptions = {
     from: sender,
     to: notification.email,
@@ -334,11 +249,11 @@ const sendEmail = async (sender, senderPass, notification) => {
   };
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-      console.log(error);
       flag = false;
     } else {
       console.log("Email sent: " + info.response);
       flag = true;
     }
   });
+  return flag;
 };

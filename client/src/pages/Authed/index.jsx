@@ -66,7 +66,6 @@ const AuthedPages = () => {
         </>
       ) : role === 3 ? (
         <>
-          <Route path="students" element={<Students />} />
           <Route
             path="students/:studentID/subjects"
             element={<StudentClasses />}

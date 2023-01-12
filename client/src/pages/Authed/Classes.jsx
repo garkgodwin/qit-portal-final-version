@@ -271,15 +271,6 @@ const Classes = () => {
                       className="table-function"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleUpdate(acc);
-                      }}
-                    >
-                      Update
-                    </button>
-                    <button
-                      className="table-function"
-                      onClick={(e) => {
-                        e.preventDefault();
                         handleAdd(acc._id);
                       }}
                     >
@@ -349,7 +340,7 @@ const Classes = () => {
                 onChange={(e) => {
                   setFormInputs({
                     ...formInputs,
-                    instructor: e.target.validationMessage,
+                    instructor: e.target.value,
                   });
                 }}
               >

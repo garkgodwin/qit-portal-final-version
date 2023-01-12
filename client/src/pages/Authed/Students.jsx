@@ -284,7 +284,7 @@ const Students = () => {
   //? TABLE FUNCTIONS
   const handleUpdateStudent = (studentID) => {
     setSelectedData(studentID);
-    formValues({
+    setFormValues({
       ...formValues,
       shown: true,
       type: 2,
@@ -328,7 +328,9 @@ const Students = () => {
               <th>Year Level</th>
               <th>Section</th>
               <th>Guardian</th>
-              <th>Actions</th>
+              {(auth.user.role === 1 || auth.user.role === 2) && (
+                <th>Actions</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -347,36 +349,29 @@ const Students = () => {
                       ? student.guardian.person.name
                       : "No guardian"}
                   </td>
-                  <td>
-                    {auth.user.role === 1 && (
+                  {(auth.user.role === 1 || auth.user.role === 2) && (
+                    <td>
+                      {auth.user.role === 1 && (
+                        <button
+                          className="table-function"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleViewGuardian(student._id);
+                          }}
+                        >
+                          Guardian
+                        </button>
+                      )}
                       <button
                         className="table-function"
                         onClick={(e) => {
-                          e.preventDefault();
-                          handleViewGuardian(student._id);
+                          handleViewSubjects(student._id);
                         }}
                       >
-                        Guardian
+                        Subjects
                       </button>
-                    )}
-                    <button
-                      className="table-function"
-                      onClick={(e) => {
-                        handleViewSubjects(student._id);
-                      }}
-                    >
-                      Subjects
-                    </button>
-                    <button
-                      className="table-function"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleUpdateStudent(student._id);
-                      }}
-                    >
-                      Update
-                    </button>
-                  </td>
+                    </td>
+                  )}
                 </tr>
               );
             })}

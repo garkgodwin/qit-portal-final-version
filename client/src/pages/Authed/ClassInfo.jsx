@@ -127,9 +127,9 @@ const ClassInfo = () => {
             +
           </button>
         </div>
-        {classData.students.map((student) => {
+        {classData.students.map((student, index) => {
           return (
-            <div className="class-student" key={student._id}>
+            <div className="class-student" key={index}>
               <p>{student.person.name || "No student name"}</p>
               <span>Student</span>
               <button className="class-student-function">View details</button>
@@ -152,9 +152,9 @@ const ClassInfo = () => {
             <div className="form-field form-field-100">
               <label>Available studnets to be added</label>
               <select size={12}>
-                {formStudents.map((student) => {
+                {formStudents.map((student, index) => {
                   return (
-                    <option key={student._id} value={student._id}>
+                    <option key={index} value={student._id}>
                       {student.course +
                         " : " +
                         studentLevelText(student.level) +

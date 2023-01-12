@@ -17,7 +17,7 @@ const linksGeneral = [
   {
     to: "/students",
     text: "Students",
-    access: [1, 2, 3],
+    access: [1, 2],
   },
 ];
 

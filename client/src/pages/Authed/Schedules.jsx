@@ -66,6 +66,7 @@ const Schedules = () => {
 
   const getAllSchedules = async () => {
     const result = await getSchedules();
+    console.log(result);
     if (result.status === 200) {
       setSchedules(result.data);
     }
@@ -117,7 +118,7 @@ const Schedules = () => {
         })
       );
       if (result.status === 200) {
-        setSchedules([...schedules, result.data]);
+        window.location.reload(false);
         setFormValues({
           ...formValues,
           loading: false,

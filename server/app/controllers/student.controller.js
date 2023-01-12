@@ -24,20 +24,25 @@ const {
 } = require("../helpers/get");
 
 exports.getAllStudents = async (req, res) => {
-  const students = await StudentModel.find({})
-    .populate({
-      path: "person",
-    })
-    .populate({
-      path: "user",
-    })
-    .populate({
-      path: "guardian",
-      populate: {
+  const userID = req.userId;
+  const user = await UserModel.findById(userID);
+  let students = [];
+  if (user.role === 1 || user.role === 2) {
+    students = await StudentModel.find({})
+      .populate({
         path: "person",
-      },
-    })
-    .exec();
+      })
+      .populate({
+        path: "user",
+      })
+      .populate({
+        path: "guardian",
+        populate: {
+          path: "person",
+        },
+      })
+      .exec();
+  }
   return res.status(200).send({
     message: "Successfully fetched all students",
     data: students,
@@ -128,6 +133,17 @@ exports.addNewSubjectToStudent = async (req, res) => {
     });
   }
 
+  const subjects = await StudentSubjectModel.find({
+    student: student._id,
+  }).exec();
+  for (let i = 0; i < subjects.length; i++) {
+    const sub = subjects[i];
+    if (sub.subjectCode === body.subjectCode) {
+      return res.status(409).send({
+        message: "This subject has already been added for this student",
+      });
+    }
+  }
   const subjectDetails = getSubjectDetails(student.type, body.subjectCode);
   if (!subjectDetails) {
     return res.status(404).send({
@@ -146,14 +162,10 @@ exports.addNewSubjectToStudent = async (req, res) => {
   });
   await newSubject.save();
 
-  let studentSubject = await StudentSubjectModel.findById(
-    newSubject._id
-  ).lean();
-  studentSubject.subjectName = subjectName(
-    studentSubject.subjectCode,
-    studentSubject.type
-  );
-  return studentSubject;
+  return res.status(200).send({
+    message: "Successfully added a new subject for this student",
+    data: newSubject,
+  });
 };
 
 //? GUARDIANS

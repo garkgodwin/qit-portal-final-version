@@ -110,11 +110,120 @@ exports.updateSchoolInfo = async (req, res) => {
     false,
     req.userId
   );
-  await require("./notification.controller").createAndSendNotifications7days(
-    "update"
-  );
+  await updateNotifications();
   return res.status(200).send({
     message: "Successfully update the current school info",
     data: schoolInfo,
   });
+};
+
+const updateNotifications = async () => {
+  const school = await SchoolInfoModel.findOne({
+    current: true,
+    locked: false,
+  }).exec();
+  let shootDate = new Date(Date.parse(school.endDate));
+  shootDate = new Date(shootDate.setDate(shootDate.getDate() - 8))
+    .toISOString()
+    .substring(0, 10);
+
+  const students = await StudentModel.find({
+    schoolInfo: school._id,
+  })
+    .populate({
+      path: "guardian",
+      populate: {
+        path: "person",
+      },
+    })
+    .populate({
+      path: "person",
+    })
+    .populate({
+      path: "user",
+    })
+    .exec();
+
+  //? map students
+  for (let i = 0; i < students.length; i++) {
+    //? get guardians
+    let student = students[i];
+    let studentUser = student.user;
+    let studentPerson = student.person;
+    let guardianUser = student.guardian;
+
+    if (!studentUser.semesterNotification) {
+      let message = "";
+      if (totalStudentGrade < 55) {
+        message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
+      } else {
+        message = `Congratulations! Your grade is ${totalStudentGrade}!`;
+      }
+      const newNotifStudent = NotificationModel({
+        subject: "QIT Portal",
+        body: `Good day ${student.person.name}! ${message}`,
+        mobileNumber: studentPerson.mobileNumber,
+        smsSent: false,
+        email: studentUser.email,
+        emailSent: false,
+        shootDate: shootDate,
+      });
+      studentUser.semesterNotification = newNotifStudent._id;
+      await newNotifStudent.save();
+      await studentUser.save();
+    }
+    //? GUARDIAN NOTIF
+    if (guardianUser && !guardianUser.semesterNotification) {
+      let message = "";
+      if (totalStudentGrade < 55) {
+        message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
+      } else {
+        message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
+      }
+      const newNotif = NotificationModel({
+        subject: "QIT Portal",
+        body: `Good day ${guardianUser.person.name}! ${message}`,
+        mobileNumber: guardianUser.mobileNumber,
+        smsSent: false,
+        email: guardianUser.person.email,
+        emailSent: false,
+        shootDate: shootDate,
+      });
+      guardianUser.semesterNotification = newNotif._id;
+      await newNotif.save();
+      await guardianUser.save();
+    }
+
+    if (studentUser.semesterNotification) {
+      let message = "";
+      if (totalStudentGrade < 55) {
+        message = `We are very sorry to inform you that your grade ${totalStudentGrade} is currently below the passing grade.`;
+      } else {
+        message = `Congratulations! Your grade is ${totalStudentGrade}!`;
+      }
+      let updateNotif = await NotificationModel.findById(
+        studentUser.semesterNotification
+      );
+      updateNotif.shootDate = shootDate;
+      updateNotif.body = `Good day ${student.person.name}! ${message}`;
+      updateNotif.subject = "QIT Portal";
+      await updateNotif.save();
+    }
+    //? GUARDIAN NOTIF
+    if (guardianUser && guardianUser.semesterNotification) {
+      let message = "";
+      if (totalStudentGrade < 55) {
+        message = `We are very sorry to inform you that your student's grade ${totalStudentGrade} is currently below the passing grade.`;
+      } else {
+        message = `Congratulations! Your student's grade is ${totalStudentGrade}!`;
+      }
+      let updateNotif = await NotificationModel.findById(
+        studentUser.semesterNotification
+      );
+      updateNotif.shootDate = shootDate;
+      updateNotif.body = `Good day ${guardianUser.person.name}! ${message}`;
+      updateNotif.subject = "QIT Portal";
+      await updateNotif.save();
+    }
+  }
 };

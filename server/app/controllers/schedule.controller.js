@@ -172,8 +172,10 @@ exports.createSchedule = async (req, res) => {
       path: "class",
       populate: {
         path: "instructor",
+        select: "person",
         populate: {
           path: "person",
+          select: "name",
         },
       },
     })

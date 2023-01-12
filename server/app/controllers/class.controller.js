@@ -3,10 +3,12 @@ const ClassModel = db.class;
 const StudentModel = db.students;
 const StudentSubjectModel = db.studentSubjects;
 const InstructorModel = db.class;
+const UserModel = db.users;
 const { createHistory } = require("./history.controller");
 const { subjectName } = require("../helpers/get");
 
 exports.getAllClasses = async (req, res) => {
+  const user = await UserModel.findById(req.userId);
   const currentSchoolID = req.currentSchoolID;
   const classes = await ClassModel.find({
     schoolInfo: currentSchoolID,
@@ -24,10 +26,44 @@ exports.getAllClasses = async (req, res) => {
     return cls;
   });
 
+  let filteredClasses = [];
+  if (user.role === 3) {
+    filteredClasses = await ClassModel.find({
+      instructor: user._id,
+    })
+      .populate({
+        path: "instructor",
+        populate: {
+          path: "person",
+        },
+      })
+      .lean();
+    filteredClasses = filteredClasses.map((cls) => {
+      cls.name = subjectName(cls.subjectCode, cls.studentType);
+      return cls;
+    });
+  } else if (user.role === 4 || user.role === 5) {
+    // student and guardian
+    const student = await StudentModel.findOne({
+      user: user._id,
+    });
+    filteredClasses = formattedClasses.filter((cls) => {
+      const students = cls.students;
+      for (let i = 0; i < students; i++) {
+        if (students[i] === student._id) {
+          return cls;
+        }
+      }
+    });
+  } else {
+    // admin or registrar view
+    filteredClasses = formattedClasses;
+  }
+
   return res.status(200).send({
     message:
       "Successfully fetched the classes for this school year and semester",
-    data: formattedClasses,
+    data: filteredClasses,
   });
 };
 
