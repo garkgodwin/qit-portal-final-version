@@ -19,19 +19,25 @@ const nodemailer = require("nodemailer");
 exports.getUnsentSmsNotifications = async (req, res) => {
   const data = await NotificationModel.find({
     smsSent: false,
-    shootDate: "", //TODO
-  }).exec();
+  }).lean();
 
+  const formattedNotifications = [];
   for (let i = 0; i < data.length; i++) {
-    await NotificationModel.findByIdAndUpdate(data[i]._id, {
-      smsSent: true,
-    }).exec();
+    let notif = data[i];
+    if (isDateLessThanToday(notif.shootDate)) {
+      console.log("Sending sms notification to: " + notif.mobileNumber);
+      notification.sent = smsSent;
+      formattedNotifications.push(notification);
+      await NotificationModel.findByIdAndUpdate(data[i]._id, {
+        smsSent: true,
+      }).exec();
+    }
   }
 
   //TODO: Check date to send also
   return res.status(200).send({
     message: "Successfully retrieved all unsent sms notifications.",
-    notifications: data,
+    formattedNotifications: data,
   });
 };
 
