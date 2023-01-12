@@ -11,4 +11,5 @@ module.exports = (app) => {
   require("./student.routes")(app);
   require("./class.routes")(app);
   require("./schedule.routes")(app);
+  require("./notification.routes")(app);
 };

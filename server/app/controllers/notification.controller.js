@@ -17,17 +17,19 @@ const { calculateTermGrade } = require("../helpers/calculate");
 const nodemailer = require("nodemailer");
 
 exports.getUnsentSmsNotifications = async (req, res) => {
+  console.log("Fetch unsent SMS notifications");
   const data = await NotificationModel.find({
     smsSent: false,
-  }).lean();
+  }).exec();
 
   const formattedNotifications = [];
   for (let i = 0; i < data.length; i++) {
     let notif = data[i];
     if (isDateLessThanToday(notif.shootDate)) {
       console.log("Sending sms notification to: " + notif.mobileNumber);
-      notification.sent = smsSent;
-      formattedNotifications.push(notification);
+      let fNotif = notif;
+      fNotif.sent = notif.smsSent;
+      formattedNotifications.push(fNotif);
       await NotificationModel.findByIdAndUpdate(data[i]._id, {
         smsSent: true,
       }).exec();
@@ -37,7 +39,7 @@ exports.getUnsentSmsNotifications = async (req, res) => {
   //TODO: Check date to send also
   return res.status(200).send({
     message: "Successfully retrieved all unsent sms notifications.",
-    formattedNotifications: data,
+    notifications: formattedNotifications,
   });
 };
 
