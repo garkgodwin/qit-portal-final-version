@@ -7,7 +7,7 @@ exports.NameUnique = async (req, res, next) => {
   const person = req.body.person;
   const personID = req.params.personID;
   const name = person.name;
-
+  console.log(name);
   if (!name || name === "") {
     return res.status(404).send({
       message: "Please fill in the name field.",
