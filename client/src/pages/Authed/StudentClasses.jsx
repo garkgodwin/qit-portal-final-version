@@ -328,7 +328,7 @@ const StudentClasses = (props) => {
               <th>Prefi</th>
               <th>Final</th>
               <th>Total</th>
-              {(auth.user.role === 2 || auth.user.role === 1) && (
+              {(auth.user.role === 2 || auth.user.role === 3) && (
                 <th>Action</th>
               )}
             </tr>
@@ -346,17 +346,19 @@ const StudentClasses = (props) => {
                   <td>{calculateTermGrade(cls.grades.prefi).toString()}</td>
                   <td>{calculateTermGrade(cls.grades.final).toString()}</td>
                   <td>{getTotal(cls.grades)}</td>
-                  {(auth.user.role === 2 || auth.user.role === 1) && (
+                  {(auth.user.role === 2 || auth.user.role === 3) && (
                     <td>
-                      <button
-                        className="table-function"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleDropStudentSubject(cls._id);
-                        }}
-                      >
-                        Drop
-                      </button>
+                      {auth.user.role === 2 && (
+                        <button
+                          className="table-function"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDropStudentSubject(cls._id);
+                          }}
+                        >
+                          Drop
+                        </button>
+                      )}
                       <button
                         className="table-function"
                         onClick={(e) => {
