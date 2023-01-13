@@ -218,15 +218,6 @@ exports.addStudentToClass = async (req, res) => {
     });
   }
 
-  //? check if student is already in class
-  const students = classData.students;
-  const exists = students.includes(student._id);
-  if (exists) {
-    return res.status(409).send({
-      message: "Student is already in class",
-    });
-  }
-
   //? check if students has this subject in class
   const studentSubject = await StudentSubjectModel.findOne({
     student: studentID,

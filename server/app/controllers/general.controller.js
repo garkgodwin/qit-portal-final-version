@@ -161,7 +161,7 @@ exports.getDashboardData = async (req, res) => {
     });
     let count = 0;
     instructorClasses.map((cls) => {
-      count += cls.students;
+      count += 1;
     });
     data = [
       {
