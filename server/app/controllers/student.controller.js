@@ -206,6 +206,10 @@ exports.addGuardian = async (req, res) => {
   const id = req.params.studentID;
   const b = req.body;
   let userInput = b.user;
+  userInput = {
+    ...userInput,
+    role: 5,
+  };
   let personInput = {
     ...b.person,
     age: parseInt(b.person.age),
