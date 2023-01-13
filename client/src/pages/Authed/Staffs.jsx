@@ -309,7 +309,7 @@ const Staffs = () => {
                   setFormInputs({
                     ...formInputs,
                     person: {
-                      ...formInputs,
+                      ...formInputs.person,
                       gender: parseInt(e.target.value),
                     },
                   });

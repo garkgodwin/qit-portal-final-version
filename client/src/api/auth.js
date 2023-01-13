@@ -94,13 +94,21 @@ export const authenticate = async (token) => {
       };
     })
     .catch((error) => {
-      const { data, status } = error.response;
-      const message = data.message;
-      result = {
-        ...result,
-        status: status,
-        message: message,
-      };
+      if (error.response) {
+        const { data, status } = error.response;
+        const message = data.message;
+        result = {
+          ...result,
+          status: status,
+          message: message,
+        };
+      } else {
+        result = {
+          ...result,
+          status: 500,
+          message: "Credentials invalid",
+        };
+      }
     });
   return result;
 };

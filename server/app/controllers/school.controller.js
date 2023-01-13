@@ -1,6 +1,8 @@
 const db = require("../models");
 const SchoolInfoModel = db.schoolInfo;
 const StudentModel = db.students;
+const StudentSubjectModel = db.studentSubjects;
+const NotificationModel = db.notifications;
 const ClassModel = db.class;
 const { createHistory } = require("./history.controller");
 exports.getAllSchoolInfos = async (req, res) => {
@@ -118,6 +120,7 @@ exports.updateSchoolInfo = async (req, res) => {
 };
 
 const updateNotifications = async () => {
+  console.log("Updating notifications");
   const school = await SchoolInfoModel.findOne({
     current: true,
     locked: false,
@@ -146,6 +149,7 @@ const updateNotifications = async () => {
 
   //? map students
   for (let i = 0; i < students.length; i++) {
+    console.log("updating student notif");
     //? get guardians
     let student = students[i];
     let studentUser = student.user;
@@ -194,6 +198,7 @@ const updateNotifications = async () => {
       await guardianUser.save();
     }
 
+    const totalStudentGrade = await getStudentCurrentGrade(student._id);
     if (studentUser.semesterNotification) {
       let message = "";
       if (totalStudentGrade < 55) {
@@ -225,5 +230,50 @@ const updateNotifications = async () => {
       updateNotif.subject = "QIT Portal";
       await updateNotif.save();
     }
+  }
+};
+
+const getStudentCurrentGrade = async (student, currentSchoolID) => {
+  const subjects = await StudentSubjectModel.find({
+    student: student._id,
+    schoolInfo: currentSchoolID,
+  });
+  let courseSubjects = [];
+  if (student.type === 1) {
+    courseSubjects = collegeSubjectsToArray(COLLEGE_SUBJECTS);
+  } else if (student.type === 2) {
+    courseSubjects = seniorSubjectsToArray(SENIOR_SUBJECTS);
+  } else if (student.type === 3) {
+    courseSubjects = juniorSubjectsToArray(JUNIOR_SUBJECTS);
+  } else {
+    return 0;
+  }
+
+  if (subjects.length > 0) {
+    let totalUnits = 0;
+    let totalGrades = 0;
+    for (let i = 0; i < subjects.length; i++) {
+      const sub = subjects[i];
+      let subDetails = courseSubjects.find((a) => {
+        return a.code === sub.code;
+      });
+      if (subDetails.type !== "extra") {
+        const prelimGrade = calculateTermGrade(sub.grades.prelim) * 0.2;
+        const midGrade = calculateTermGrade(sub.grades.mid) * 0.2;
+        const prefiGrade = calculateTermGrade(sub.grades.prefi) * 0.2;
+        const finalGrade = calculateTermGrade(sub.grades.final) * 0.4;
+        const subTotal =
+          (prelimGrade + midGrade + prefiGrade + finalGrade) *
+          100 *
+          subDetails.units;
+        totalGrades += subTotal;
+        totalUnits += subDetails.units;
+      }
+    }
+    console.log(total);
+    const total = (totalGrades / totalUnits).toFixed(2);
+    return total;
+  } else {
+    return 0;
   }
 };
