@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 //? GLOBAL STATE
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../features/toastSlice";
 
 //? API
@@ -33,6 +33,7 @@ import Filter from "../../components/filter/Filter";
 import Form from "../../components/form/Form";
 
 const Classes = () => {
+  const auth = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [classes, setClasses] = useState([]);
@@ -285,15 +286,17 @@ const Classes = () => {
       </div>
 
       <div className="page-functions">
-        <button
-          className="page-function"
-          onClick={(e) => {
-            e.preventDefault();
-            handleCreate();
-          }}
-        >
-          Create class
-        </button>
+        {auth.user.role === 2 && (
+          <button
+            className="page-function"
+            onClick={(e) => {
+              e.preventDefault();
+              handleCreate();
+            }}
+          >
+            Create class
+          </button>
+        )}
       </div>
       <Form
         shown={formValues.shown}
