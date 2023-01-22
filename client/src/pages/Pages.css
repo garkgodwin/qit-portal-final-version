@@ -85,8 +85,17 @@
   cursor: pointer;
 }
 .page-body table tbody tr:nth-child(odd){
+  background-color: #06455c;
+}
+.page-body table tbody tr{
+  background-color: #084a63;
+  color: var(--color-60);
+  opacity: 0.9;
+}
+
+.page-body table tbody tr:hover{
   background-color: var(--color-10);
-  color: var(--color-30);
+  opacity: 1;
 }
 .table-button{
   margin: 2px;
