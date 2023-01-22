@@ -35,13 +35,13 @@ const linksSchool = [
   {
     to: "/classes",
     text: "Classes",
-    access: [1, 2, 3, 4, 5],
+    access: [1, 2, 3],
   },
-  {
-    to: "/schedules",
-    text: "Schedules",
-    access: [1, 2, 3, 4, 5],
-  },
+  // {
+  //   to: "/schedules",
+  //   text: "Schedules",
+  //   access: [1, 2, 3, 4, 5],
+  // },
 ];
 
 module.exports = {

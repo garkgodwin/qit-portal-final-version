@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
 }
-
 .Page.page-login{
   justify-content: center;
   align-items: center;
@@ -22,8 +21,29 @@
 .page-header{
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  justify-content: space-between;
 }
+
+
+.page-header-functions{
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  background-color: transparent;
+}
+.page-header-functions .page-function:hover{
+  background-color: var(--color-30);
+  color: var(--color-10);
+  font-weight: 400;
+}
+.page-header-functions .page-function{
+  background-color: transparent;
+  color:var(--color-30);
+  border: 1px solid var(--color-30);
+}
+
 .page-body{
   width: 100%;
   height: 100%;
@@ -69,7 +89,8 @@
   color: var(--color-30);
 }
 .table-button{
-  width: 100%;
+  margin: 2px;
+  width: 100px;
   height: 24px;
   background-color: var(--color-10);
   color: var(--color-30);
@@ -218,4 +239,29 @@
   flex-direction: column;
   align-items: center;
   margin: 2px 0;
+}
+
+
+.page-header-notifications{
+  padding: 4px;
+  background-color: var(--color-10);
+  width: auto;
+  margin: 0 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.page-header-notifications span{
+  color: var(--color-60);
+  margin: 2px;
+}
+
+.page-header-notifications .page-function{
+  margin: 2px;
+  border: 1px solid var(--color-60);
+  color: var(--color-60);
+}
+.page-header-notifications .page-function:hover{
+  background-color: var(--color-60);
+  color: var(--color-10);
 }

@@ -9,6 +9,8 @@ import {
   createSchoolInfo,
   updateSchoolInfo,
   getSchoolInfoForUpdate,
+  lockOrUnlockSchoolInfo,
+  moveSchoolInfo,
 } from "../../api/schoolInfo";
 
 import { useNavigate } from "react-router-dom";
@@ -116,12 +118,16 @@ const SchoolInfo = () => {
 
     setFilteredSchoolInfos(filtered);
   };
-  const handleCreate = () => {
-    setFormValues({
-      ...formValues,
-      shown: true,
-      type: 1,
-    });
+  const handleCreate = async () => {
+    const result = await createSchoolInfo();
+    dispatch(
+      showToast({
+        body: result.message,
+      })
+    );
+    if (result.status === 200) {
+      setSchoolInfos([...schoolInfos, result.data]);
+    }
   };
   const handleSubmit = async () => {
     setFormValues({
@@ -196,6 +202,34 @@ const SchoolInfo = () => {
       });
     }
   };
+  const handleLockInfo = async (id) => {
+    const result = await lockOrUnlockSchoolInfo(id);
+    dispatch(
+      showToast({
+        body: result.message,
+      })
+    );
+    if (result.status === 200) {
+      const newInfos = schoolInfos.map((info) => {
+        if (info._id === id) {
+          info.locked = !info.locked;
+        }
+        return info;
+      });
+      setSchoolInfos(newInfos);
+    }
+  };
+  const handleMoveInfo = async (id) => {
+    const result = await moveSchoolInfo(id);
+    dispatch(
+      showToast({
+        body: result.message,
+      })
+    );
+    if (result.status === 200) {
+      navigate("/");
+    }
+  };
   return (
     <>
       <div className="page-header">
@@ -236,15 +270,27 @@ const SchoolInfo = () => {
                   <td>
                     {!info.current && (
                       <>
-                        <button className="table-button table-button-1">
+                        <button
+                          className="table-button table-button-1"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleMoveInfo(info._id);
+                          }}
+                        >
                           Move
                         </button>
                       </>
                     )}
-                    {!info.locked && (
+                    {info.current && (
                       <>
-                        <button className="table-button table-button-2">
-                          Lock
+                        <button
+                          className="table-button table-button-2"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleLockInfo(info._id);
+                          }}
+                        >
+                          {info.locked ? "Unlock" : "Lock"}
                         </button>
                         <button
                           className="table-button table-button-1"
@@ -272,7 +318,7 @@ const SchoolInfo = () => {
             handleCreate();
           }}
         >
-          Create school info
+          Create next school year and semester
         </button>
       </div>
       <Form
@@ -298,10 +344,21 @@ const SchoolInfo = () => {
               <label>Semester</label>
               <input type="text" disabled value={formInputs.sem} />
             </div>
-
+          </div>
+          <div className="form-fields">
             <div className="form-field">
               <label>Start Date</label>
-              <input type="date" disabled value={formInputs.startDate} />
+              <input
+                type="date"
+                value={formInputs.startDate}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormInputs({
+                    ...formInputs,
+                    startDate: val,
+                  });
+                }}
+              />
             </div>
 
             <div className="form-field">

@@ -62,7 +62,6 @@ const AuthedPages = () => {
           <Route path="subjects" element={<Subjects />} />
           <Route path="classes" element={<Classes />} />
           <Route path="classes/:classID/info" element={<ClassInfo />} />
-          <Route path="schedules" element={<Schedules />} />
         </>
       ) : role === 3 ? (
         <>
@@ -73,21 +72,19 @@ const AuthedPages = () => {
           <Route path="subjects" element={<Subjects />} />
           <Route path="classes" element={<Classes />} />
           <Route path="classes/:classID/info" element={<ClassInfo />} />
-          <Route path="schedules" element={<Schedules />} />
         </>
       ) : role === 4 ? (
         <>
-          <Route path="subjects" element={<Subjects />} />
-          <Route path="classes" element={<Classes />} />
-          <Route path="classes/:classID/info" element={<ClassInfo />} />
-          <Route path="schedules" element={<Schedules />} />
+          <Route
+            path="students/:studentID/subjects"
+            element={<StudentClasses />}
+          />
         </>
       ) : role === 5 ? (
         <>
           <Route path="subjects" element={<Subjects />} />
           <Route path="classes" element={<Classes />} />
           <Route path="classes/:classID/info" element={<ClassInfo />} />
-          <Route path="schedules" element={<Schedules />} />
         </>
       ) : null}
       <Route path="*" element={<h1>Page not found</h1>} />

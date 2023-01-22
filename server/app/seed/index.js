@@ -12,14 +12,19 @@ const UserModel = db.users;
 const bcrypt = require("bcryptjs");
 
 const { createHistory } = require("../controllers/history.controller");
+const { getSubjectDetails } = require("../helpers/get");
 
 exports.startSeed = async () => {
   // await clearAllCollections();
   // await createSchoolInfo();
   // await createAdmin();
   //? once connected start email notifcations
-  require("../controllers/notification.controller").getAndSendEmailNotifications();
-  require("../controllers/notification.controller").createAndSendNotifications7days();
+  // require("../controllers/notification.controller").getAndSendEmailNotifications();
+  // require("../controllers/notification.controller").createAndSendNotifications7days();
+  //? update grades if empty
+  // await updateGradesIfEmpty();
+  //? update subject details if empty
+  // await updateSubjectDetails();
 };
 
 const clearAllCollections = async () => {
@@ -71,39 +76,43 @@ const createAdmin = async () => {
 };
 
 const createSchoolInfo = async () => {
-  console.log("System: creating school infos");
-  for (let i = 22; i < 30; i++) {
-    let sy = i + "-" + (i + 1);
-    let sem = 2;
-    for (let x = 1; x <= sem; x++) {
-      const newInfo = SchoolInfoModel({
-        sy: sy,
-        sem: x,
-        startDate: "2022-06-01",
-        endDate: "2023-03-01",
-      });
-      console.log(`System: creating school year: ${sy} and semester: ${x}`);
-      await newInfo.save();
-      await createHistory(
-        `created school info for school year: ${sy} and semester: ${x}`,
-        true
-      );
-    }
-  }
-  const updateInfo = await SchoolInfoModel.findOne({
+  console.log("System: creating school info");
+  const newInfo = SchoolInfoModel({
     sy: "22-23",
     sem: 1,
-  }).exec();
-  console.log(
-    `System: updating school info: ${updateInfo.sy} for semester ${updateInfo.sem} as current`
-  );
-  updateInfo.current = true;
-  updateInfo.locked = false;
-  await updateInfo.save();
-  console.log(
-    `System: updated school info: ${updateInfo.sy} for semester ${updateInfo.sem} as current`
-  );
-  console.log("System: created school infos");
+    startDate: "2022-06-01",
+    endDate: "2023-03-01",
+    current: true,
+    locked: false,
+  });
+  await newInfo.save();
+  console.log("System: created school info");
 };
 
 const createStudentsAndGuardians = async () => {};
+
+const updateSubjectDetails = async () => {
+  const subjects = await StudentSubjectModel.find({}).exec();
+  for (let i = 0; i < subjects.length; i++) {
+    const subject = subjects[i];
+    const subjectDetails = getSubjectDetails(1, subject.subjectCode);
+    subject.type = subjectDetails.type;
+    subject.units = subjectDetails.units;
+    await subject.save();
+  }
+};
+const updateGradesIfEmpty = async () => {
+  const subjects = StudentSubjectModel.find({}).exec();
+  for (let i = 0; i < subjects.length; i++) {
+    const sub = subjects[i];
+    if (sub.grades === null || sub.grades === undefined) {
+      sub.grades = {
+        prelim: 0,
+        mid: 0,
+        prefi: 0,
+        final: 0,
+      };
+      await sub.save();
+    }
+  }
+};

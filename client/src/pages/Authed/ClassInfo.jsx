@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { showToast } from "../../features/toastSlice";
 import {
   getClass,
@@ -12,6 +12,7 @@ import Form from "../../components/form/Form";
 import { studentLevelText } from "../../helpers/formatSubjects";
 
 const ClassInfo = () => {
+  const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
@@ -85,11 +86,6 @@ const ClassInfo = () => {
       })
     );
     if (result.status === 200) {
-      setFormValues({
-        ...formValues,
-        loading: false,
-        shown: false,
-      });
       setClassData({
         ...classData,
         students: [...classData.students, result.data],
@@ -98,6 +94,7 @@ const ClassInfo = () => {
     setFormValues({
       ...formValues,
       loading: false,
+      shown: false,
     });
   };
 
@@ -116,23 +113,33 @@ const ClassInfo = () => {
         <button className="class-instructor-function">View details</button>
       </div>
       <div className="class-students">
-        <div className="class-empty">
-          <button
-            className="table-function"
-            onClick={(e) => {
-              e.preventDefault();
-              handleOpenForm();
-            }}
-          >
-            +
-          </button>
-        </div>
+        {auth.user.role === 2 && (
+          <div className="class-empty">
+            <button
+              className="table-function"
+              onClick={(e) => {
+                e.preventDefault();
+                handleOpenForm();
+              }}
+            >
+              +
+            </button>
+          </div>
+        )}
         {classData.students.map((student, index) => {
           return (
             <div className="class-student" key={index}>
               <p>{student.person.name || "No student name"}</p>
               <span>Student</span>
-              <button className="class-student-function">View details</button>
+              <button
+                className="class-student-function"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate(`/students/${student._id}/subjects`);
+                }}
+              >
+                View details
+              </button>
             </div>
           );
         })}

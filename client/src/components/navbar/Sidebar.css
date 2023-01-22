@@ -112,3 +112,24 @@
   background-color: var(--color-60  );
   background-color: var(--color-30);
 }
+
+.sidebar-actions{
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--color-60);
+  padding: 4px;
+}
+.sidebar-function{
+  width: 100%;
+  background-color: var(--color-10);
+  border: 1px solid var(--color-30);
+  color: var(--color-30);
+  padding: 8px;
+  margin: 2px 0;
+}
+
+.sidebar-function:hover{
+  background-color: var(--color-30);
+  color: var(--color-10);
+}

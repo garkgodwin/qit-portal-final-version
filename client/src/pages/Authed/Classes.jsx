@@ -63,25 +63,6 @@ const Classes = () => {
       label: "Subject code",
       placeholder: "subject here...",
     },
-    selected1: {
-      label: "Class is for",
-      options: [
-        { value: 0, text: "Everyone" },
-        { value: 1, text: "College" },
-        { value: 2, text: "Senior High" },
-        { value: 3, text: "Junior High" },
-      ],
-    },
-    selected2: {
-      label: "Class by year level",
-      options: [
-        { value: 0, text: "All year levels" },
-        { value: 1, text: "1st year" },
-        { value: 2, text: "2nd year" },
-        { value: 3, text: "3rd year" },
-        { value: 4, text: "4th year" },
-      ],
-    },
   };
 
   useEffect(() => {
@@ -236,6 +217,10 @@ const Classes = () => {
     });
     setSelectedClass(classData);
   };
+
+  const handleViewStudents = (classID) => {
+    navigate(`/classes/${classID}/info`);
+  };
   return (
     <>
       <div className="page-header">
@@ -254,7 +239,7 @@ const Classes = () => {
               <th>Instructor</th>
               <th># of students</th>
               <th>Students</th>
-              <th>Actions</th>
+              {(auth.user.role === 2 || auth.user.role) && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -268,15 +253,28 @@ const Classes = () => {
                   <td>{acc.students.length} </td>
                   <td>{studentForThisSubject(acc.studentType)}</td>
                   <td>
-                    <button
-                      className="table-function"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAdd(acc._id);
-                      }}
-                    >
-                      Add student
-                    </button>
+                    {auth.user.role === 2 && (
+                      <button
+                        className="table-function"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAdd(acc._id);
+                        }}
+                      >
+                        Add student
+                      </button>
+                    )}
+                    {auth.user.role === 3 && (
+                      <button
+                        className="table-function"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleViewStudents(acc._id);
+                        }}
+                      >
+                        View students
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
@@ -313,29 +311,6 @@ const Classes = () => {
               : "Class form"}
           </h4>
           <div className="form-fields">
-            <div className="form-field">
-              <label>Student Type</label>
-              <select
-                value={formInputs.studentType}
-                onChange={(e) => {
-                  setFormInputs({
-                    ...formInputs,
-                    studentType: parseInt(e.target.value),
-                  });
-
-                  setFilteredSubjects(
-                    subjects.filter((sub) => {
-                      return sub.student === parseInt(e.target.value);
-                    })
-                  );
-                }}
-              >
-                <option value={1}>College</option>
-                <option value={2}>Senior High</option>
-                <option value={3}>Junior High</option>
-              </select>
-            </div>
-
             <div className="form-field">
               <label>Instructor</label>
               <select

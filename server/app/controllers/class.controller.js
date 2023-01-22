@@ -159,29 +159,30 @@ exports.getStudentsAvailable = async (req, res) => {
     })
     .exec();
 
-  //? codeCode
-  //? subjectType
-  //? studentType
+  if (!classData) {
+    return res.status(404).send({
+      message: "Class information is not found",
+    });
+  }
 
-  // if classcode = subject code of student subjects
-  // if classtudenttype = subject type
-
-  let studentSubjects = await StudentSubjectModel.find({
+  const cStudents = classData.students;
+  let students = await StudentModel.find({
     schoolInfo: currentSchoolID,
-    subjectCode: classData.subjectCode,
-    subjectType: classData.studentType,
-  })
-    .populate({
-      path: "student",
-      populate: {
-        path: "person",
-      },
-    })
-    .exec();
-
-  const students = studentSubjects.map((subs) => {
-    return subs.student;
+  }).populate({
+    path: "person",
   });
+
+  students = students.filter((student) => {
+    let se = false;
+    for (let i = 0; i < cStudents.length; i++) {
+      if (student._id === cStudents[i]) {
+        se = true;
+        break;
+      }
+    }
+    return !se;
+  });
+
   return res.status(200).send({
     message: "Successfully fetched the students available",
     data: students,
@@ -219,10 +220,9 @@ exports.addStudentToClass = async (req, res) => {
   }
 
   //? check if students has this subject in class
-  const studentSubject = await StudentSubjectModel.findOne({
+  let studentSubject = await StudentSubjectModel.findOne({
     student: studentID,
     subjectCode: classData.subjectCode,
-    subjectType: classData.studentType,
   }).exec();
   if (!studentSubject) {
     return res.status(404).send({
@@ -230,6 +230,11 @@ exports.addStudentToClass = async (req, res) => {
     });
   }
 
+  if (classData.students.includes(student._id)) {
+    return res.status(409).send({
+      message: "Student is already in this class",
+    });
+  }
   /*
     to add student
     update class model

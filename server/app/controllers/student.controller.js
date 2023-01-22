@@ -4,6 +4,7 @@ const UserModel = db.users;
 const StudentModel = db.students;
 const NotificationModel = db.notifications;
 const ClassModel = db.class;
+const SchoolInfoModel = db.schoolInfo;
 const StudentSubjectModel = db.studentSubjects;
 const { createHistory } = require("./history.controller");
 const {
@@ -21,14 +22,31 @@ const {
   juniorSubjectsToArray,
   getSubjectDetails,
   subjectName,
+  getSubjectTotalGrade,
 } = require("../helpers/get");
 
 exports.getAllStudents = async (req, res) => {
   const userID = req.userId;
+  const type = req.params.type;
+
+  const schoolCurrent = await SchoolInfoModel.findOne({
+    current: true,
+    locked: false,
+  }).exec();
+
+  let filter = {};
+  if (type === "current" && schoolCurrent) {
+    filter = {
+      ...filter,
+      schoolInfo: schoolCurrent._id,
+    };
+  }
+
   const user = await UserModel.findById(userID);
   let students = [];
+  let formattedStudents = [];
   if (user.role === 1 || user.role === 2) {
-    students = await StudentModel.find({})
+    students = await StudentModel.find(filter)
       .populate({
         path: "person",
       })
@@ -41,28 +59,114 @@ exports.getAllStudents = async (req, res) => {
           path: "person",
         },
       })
-      .exec();
+      .lean();
+    for (let i = 0; i < students.length; i++) {
+      const student = students[i];
+      student.subjectCount = await StudentSubjectModel.find({
+        student: student._id,
+      }).count();
+      formattedStudents.push(student);
+    }
   }
   return res.status(200).send({
     message: "Successfully fetched all students",
-    data: students,
+    data: formattedStudents,
   });
 };
-exports.getStudentAndSubjects = async (req, res) => {
+exports.getStudentDetailsForUpdate = async (req, res) => {
   const id = req.params.studentID;
   const student = await StudentModel.findById(id).populate({
     path: "person",
   });
+  if (!student) {
+    return res.status(404).send({
+      message: "Student does not exist",
+    });
+  }
+  return res.status(200).send({
+    message: "Successfully fetched the student for update",
+    data: student,
+  });
+};
+exports.updateStudentDetails = async (req, res) => {
+  const id = req.params.studentID;
+  const body = req.body;
+  const si = body.student;
+  let student = await StudentModel.findById(id);
+  if (!student) {
+    return res.status(404).send({
+      message: "Student does not exist",
+    });
+  }
+  student.level = si.level;
+  await student.save();
+  return res.status(200).send({
+    message: "Successfully updated a student",
+    data: student,
+  });
+};
+exports.getStudentAndSubjects = async (req, res) => {
+  const id = req.params.studentID;
+  let student = await StudentModel.findById(id)
+    .populate({
+      path: "person",
+    })
+    .lean();
+
   let studentSubjects = await StudentSubjectModel.find({
     student: id,
-  }).lean();
+  })
+    .populate({
+      path: "schoolInfo",
+    })
+    .lean();
+
+  studentSubjects = studentSubjects.map((subject) => {
+    const total = getSubjectTotalGrade(subject);
+    subject.grades.total = total;
+    return subject;
+  });
+  student = {
+    ...student,
+    subjects: studentSubjects,
+  };
 
   return res.status(200).send({
     message: "Successfully fetched the students",
-    data: {
-      student: student,
-      subjects: studentSubjects,
-    },
+    data: student,
+  });
+};
+exports.getStudentSubjectDetails = async (req, res) => {
+  const { studentID, subjectID } = req.params;
+  if (!studentID) {
+    return res.status(404).send({
+      message: "Not found",
+    });
+  }
+  if (!subjectID) {
+    return res.status(404).send({
+      message: "Not found",
+    });
+  }
+  const student = await StudentModel.findById(studentID).exec();
+  if (!student) {
+    return res.status(404).send({
+      message: "Student is not found",
+    });
+  }
+  const studentSubject = await StudentSubjectModel.findOne({
+    student: student._id,
+    _id: subjectID,
+  }).exec();
+  if (!studentSubject) {
+    return res.status(404).send({
+      message: "Subject is not found",
+    });
+  }
+
+  return res.status(200).send({
+    message: "Successfully fetched the student's subject details",
+    data: studentSubject,
   });
 };
 exports.getStudentSubjectSchedules = async (req, res) => {
@@ -71,13 +175,6 @@ exports.getStudentSubjectSchedules = async (req, res) => {
     data: null,
   });
 };
-exports.getStudentSubjectGrades = async (req, res) => {
-  return res.status(200).send({
-    message: "Successfully fetched student's subject's grades",
-    data: null,
-  });
-};
-
 exports.getStudentSubjectAvailableToAdd = async (req, res) => {
   const id = req.params.studentID;
   const student = await StudentModel.findById(id).populate({
@@ -87,37 +184,31 @@ exports.getStudentSubjectAvailableToAdd = async (req, res) => {
     student: id,
   }).exec();
 
-  let availableSubjectsToAdd = [];
-  if (student.type === 1) {
-    const arr = collegeSubjectsToArray(COLLEGE_SUBJECTS);
-    arr.map((subject) => {
-      if (subject.code !== studentSubjects.subjectCode) {
-        availableSubjectsToAdd.push(subject);
+  let subs = [];
+  const subjects = collegeSubjectsToArray(COLLEGE_SUBJECTS);
+  for (let i = 0; i < subjects.length; i++) {
+    let flag = true;
+    const subject = subjects[i];
+    for (let j = 0; j < studentSubjects.length; j++) {
+      const existingSubject = studentSubjects[j];
+      if (existingSubject.subjectCode === subject.code) {
+        if (existingSubject.status === 0 || existingSubject === 2) {
+          flag = false;
+        }
       }
-    });
-  } else if (student.type === 2) {
-    const arr = seniorSubjectsToArray(SENIOR_SUBJECTS);
-    arr.map((subject) => {
-      if (subject.code !== studentSubjects.subjectCode) {
-        availableSubjectsToAdd.push(subject);
-      }
-    });
-  } else if (student.type === 3) {
-    const arr = juniorSubjectsToArray(JUNIOR_SUBJECTS);
-    arr.map((subject) => {
-      if (subject.code !== studentSubjects.subjectCode) {
-        availableSubjectsToAdd.push(subject);
-      }
-    });
-  } else {
-    return res.status(409).send({
-      message: "Student is not on student type",
-    });
+    }
+    if (flag) {
+      subs.push(subject);
+    }
   }
 
+  console.log(studentSubjects.length);
+
+  console.log(subjects.length);
+  console.log(subs.length);
   return res.status(200).send({
-    message: "Successfully fetched the students",
-    data: availableSubjectsToAdd,
+    message: "Successfully fetched the available subjects for this student",
+    data: subs,
   });
 };
 exports.addNewSubjectToStudent = async (req, res) => {
@@ -138,7 +229,7 @@ exports.addNewSubjectToStudent = async (req, res) => {
   }).exec();
   for (let i = 0; i < subjects.length; i++) {
     const sub = subjects[i];
-    if (sub.subjectCode === body.subjectCode) {
+    if (sub.subjectCode === body.subjectCode && sub.status === 0) {
       return res.status(409).send({
         message: "This subject has already been added for this student",
       });
@@ -158,7 +249,16 @@ exports.addNewSubjectToStudent = async (req, res) => {
     studentType: student.type,
     yearLevelOfStudent: student.level,
     student: student,
+    units: subjectDetails.units,
+    type: subjectDetails.type,
+    status: 0,
     schoolInfo: currentSchoolID,
+    grades: {
+      prelim: 0,
+      mid: 0,
+      prefi: 0,
+      final: 0,
+    },
   });
   await newSubject.save();
 
@@ -323,42 +423,18 @@ exports.updateStudent = async (req, res) => {
 };
 
 //? GRADES
-exports.createGrade = async (req, res) => {
+exports.updateGrade = async (req, res) => {
   const studentID = req.params.studentID;
   const subjectID = req.params.subjectID;
   const b = req.body;
-  const term = parseInt(b.term); // 1- prelim, 2 - mid, 3 - prefi, 4 - final
-  const type = parseInt(b.type); // 1 - quiz , 2 - activity, 3 - quiz, 4- exam
-  const achieved = parseInt(b.achieved);
-  const total = parseInt(b.total);
-  console.log(b);
-
-  //? CHECKS
-  if (type > 4 || type < 1) {
-    return res.status(409).send({
-      message: "Please select a grade type",
-    });
-  }
-  if (term > 4 || term < 1) {
-    return res.status(409).send({
-      message: "Please select a term",
-    });
-  }
-  if (!achieved || !total) {
-    return res.status(409).send({
-      message: "Please enter the total or achieved for this grade",
-    });
-  }
-  if (total === 0) {
-    return res.status(409).send({
-      message: "Total grade must not be 0",
-    });
-  }
-  if (achieved > total) {
-    return res.status(409).send({
-      message: "Achieved grade must not be greater than total grade",
-    });
-  }
+  let grades = b;
+  grades = {
+    ...grades,
+    prelim: parseInt(grades.prelim),
+    mid: parseInt(grades.mid),
+    prefi: parseInt(grades.prefi),
+    final: parseInt(grades.final),
+  };
 
   const student = await StudentModel.findById(studentID);
   const subject = await StudentSubjectModel.findOne({
@@ -375,175 +451,9 @@ exports.createGrade = async (req, res) => {
       message: "Please select a student",
     });
   }
-  //? GRADE POPULATION
-  let prelim = subject.grades.prelim;
-  let mid = subject.grades.mid;
-  let prefi = subject.grades.prefi;
-  let final = subject.grades.final;
-  if (term === 1) {
-    if (type === 4) {
-      if (
-        prelim.exam === null ||
-        (Object.keys(prelim.exam).length === 0 &&
-          prelim.exam.constructor === Object)
-      ) {
-        return res.status(409).send({
-          message: "Prelim exam has already been filled.",
-        });
-      } else {
-        prelim.exam.total = total;
-        prelim.exam.achieved = achieved;
-      }
-    } else if (type === 3) {
-      prelim.performance = [
-        ...prelim.performance,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 2) {
-      prelim.activity = [
-        ...prelim.activity,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 1) {
-      prelim.quiz = [
-        ...prelim.quiz,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    }
-  } else if (term === 2) {
-    if (type === 4) {
-      if (
-        mid.exam === null ||
-        (Object.keys(mid.exam).length === 0 && mid.exam.constructor === Object)
-      ) {
-        return res.status(409).send({
-          message: "Midterm exam has already been filled.",
-        });
-      } else {
-        mid.exam.total = total;
-        mid.exam.achieved = achieved;
-      }
-    } else if (type === 3) {
-      mid.performance = [
-        ...mid.performance,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 2) {
-      mid.activity = [
-        ...mid.activity,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 1) {
-      mid.quiz = [
-        ...mid.quiz,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    }
-  } else if (term === 3) {
-    if (type === 4) {
-      if (
-        prefi.exam === null ||
-        (Object.keys(prefi.exam).length === 0 &&
-          prefi.exam.constructor === Object)
-      ) {
-        return res.status(409).send({
-          message: "Prefi exam has already been filled.",
-        });
-      } else {
-        prefi.exam.total = total;
-        prefi.exam.achieved = achieved;
-      }
-    } else if (type === 3) {
-      prefi.performance = [
-        ...prefi.performance,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 2) {
-      prefi.activity = [
-        ...prefi.activity,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 1) {
-      prefi.quiz = [
-        ...prefi.quiz,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    }
-  } else if (term === 4) {
-    if (type === 4) {
-      if (
-        final.exam === null ||
-        (Object.keys(final.exam).length === 0 &&
-          final.exam.constructor === Object)
-      ) {
-        return res.status(409).send({
-          message: "Final exam has already been filled.",
-        });
-      } else {
-        final.exam.total = total;
-        final.exam.achieved = achieved;
-      }
-    } else if (type === 3) {
-      final.performance = [
-        ...final.performance,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 2) {
-      final.activity = [
-        ...final.activity,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    } else if (type === 1) {
-      final.quiz = [
-        ...final.quiz,
-        {
-          total: total,
-          achieved: achieved,
-        },
-      ];
-    }
-  }
 
   const update = {
-    grades: {
-      prelim: prelim,
-      mid: mid,
-      prefi: prefi,
-      final: final,
-    },
+    grades: grades,
   };
   let success = false;
   await StudentSubjectModel.findByIdAndUpdate(subject._id, update)
@@ -557,13 +467,43 @@ exports.createGrade = async (req, res) => {
     });
 
   if (!success) {
-    return req.status(500).send({
+    return res.status(500).send({
       message: "Something went wrong",
     });
   }
-  const sub = await StudentSubjectModel.findById(subject._id).exec();
+  const sub = await StudentSubjectModel.findById(subject._id).lean();
+  const total = getSubjectTotalGrade(sub);
+  sub.total = total;
   return res.status(200).send({
     message: "Successfully added a grade for this term",
     data: sub,
   });
+};
+
+//? MOVE TO CURRENT SEM
+exports.moveStudentToCurrentSem = async (req, res) => {
+  const id = req.params.studentID;
+  const currentSchoolID = req.currentSchoolID;
+  let student = await StudentModel.findById(id);
+  if (!student) {
+    return res.status(404).send({
+      message: "Student does not exist",
+    });
+  }
+  student.schoolInfo = currentSchoolID;
+  await student.save();
+  return res.status(200).send({
+    message: "Student is now moved to current school year and semester",
+  });
+};
+
+//? NOTIFY STUDENTS
+exports.notifyStudents = async (req, res) => {
+  const type = req.params.type;
+  if (!type) {
+    return res.status(409).send({
+      message: "Please select a type of notification",
+    });
+  }
+  console.log(type);
 };

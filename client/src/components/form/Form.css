@@ -1,7 +1,8 @@
 .Form{
   position: absolute;
   z-index: 1002;
-  width: 640px;
+  max-width: 640px;
+  width: auto;
   height: 400px;
   background-color: var(--color-60);
   box-shadow: 0 0 8px black;

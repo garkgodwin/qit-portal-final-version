@@ -20,7 +20,6 @@ const Sidebar = () => {
   }, []);
   const fetchCurrentSchoolInfo = async () => {
     const result = await getCurrentSchoolInfo();
-    console.log(result);
     if (result.status === 200) {
       setCurrent(result.data);
     }
@@ -33,6 +32,14 @@ const Sidebar = () => {
   const handleLogout = () => {
     dispatch(logout());
     navigate("/");
+  };
+
+  const showNotificationForm = () => {
+    alert("Do this to show form for selecting notifications to be generated");
+  };
+
+  const showGenerationPage = () => {
+    navigate("/generation");
   };
 
   return (
@@ -78,6 +85,20 @@ const Sidebar = () => {
         </div>
       </nav>
       <div className="sidebar-bottom">
+        {auth.user.role === 2 && (
+          <div className="sidebar-actions">
+            <button
+              className="sidebar-function"
+              onClick={(e) => {
+                e.preventDefault();
+                showGenerationPage();
+              }}
+            >
+              Generate reports
+            </button>
+          </div>
+        )}
+
         <div
           className="sidebar-current"
           onClick={(e) => {

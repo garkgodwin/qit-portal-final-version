@@ -7,6 +7,7 @@ import { showToast } from "../../features/toastSlice";
 //? API
 import {
   getSubjectsAvailableForThisStudent,
+  getStudentSubjectDetails,
   addSubjectToStudent,
   dropStudentSubject,
   createGrade,
@@ -25,7 +26,10 @@ import {
 } from "../../helpers/formatSubjects";
 
 //? HELPERS
-import { calculateTermGrade } from "../../helpers/calculate";
+import {
+  calculateTermGrade,
+  getSubjectTotalGrade,
+} from "../../helpers/calculate";
 import SubjectGradeList from "../../components/list/SubjectGradeList";
 
 const StudentClasses = (props) => {
@@ -34,10 +38,11 @@ const StudentClasses = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [student, setStudent] = useState(null);
-  const [subjects, setSubjects] = useState([]);
+  const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [filterValues, setFilterValues] = useState({
     text: "",
     selected1: 0,
+    selected2: 0,
   });
   const [formSubjects, setFormSubjects] = useState([]); //? These subject will be used for subject adding
   const [formValues, setFormValues] = useState({
@@ -46,15 +51,16 @@ const StudentClasses = (props) => {
     loading: false,
   });
   const [formInputs, setFormInputs] = useState({
-    subjectCode: "",
+    subjectCode: null,
+  });
+  const [formGradeInputs, setFormGradeInputs] = useState({
+    prelim: "",
+    mid: "",
+    prefi: "",
+    final: "",
   });
   const [selectedSubject, setSelectedSubject] = useState(null);
-  const [formGradeInputs, setFormGradeInputs] = useState({
-    term: 1,
-    type: 1,
-    achieved: 0,
-    total: 0,
-  });
+  const [formGradeInit, setFormGradeInit] = useState(null);
 
   useEffect(() => {
     const pth = location.pathname.split("/");
@@ -72,6 +78,14 @@ const StudentClasses = (props) => {
     });
   }, [formSubjects]);
 
+  useEffect(() => {
+    if (student) {
+      setFilteredSubjects(student.subjects);
+    } else {
+      setFilteredSubjects([]);
+    }
+  }, [student]);
+
   //? get all student's subject and classes
   const handleFetchStudentAndClasses = async (studentID) => {
     if (studentID === "" || studentID === undefined || studentID === null) {
@@ -80,8 +94,7 @@ const StudentClasses = (props) => {
       const result = await getStudentAndSubjects(studentID);
       if (result.status === 200) {
         const d = result.data;
-        setStudent(d.student);
-        setSubjects(d.subjects);
+        setStudent(d);
       } else {
         navigate("/students");
       }
@@ -111,39 +124,29 @@ const StudentClasses = (props) => {
         { value: 4, text: "4th year" },
       ],
     },
-  };
-  const init2 = {
-    text: {
-      label: "Subject",
-      placeholder: "subject here...",
-    },
-    selected: {
-      label: "Year Level",
-      options: [
-        { value: 0, text: "All" },
-        { value: 11, text: "Grade 11" },
-        { value: 12, text: "Grade 12" },
-      ],
-    },
-  };
-  const init3 = {
-    text: {
-      label: "Subject",
-      placeholder: "subject here...",
-    },
     selected2: {
-      label: "Year Level",
+      label: "Semester",
       options: [
         { value: 0, text: "All" },
-        { value: 7, text: "Grade 7" },
-        { value: 8, text: "Grade 8" },
-        { value: 9, text: "Grade 9" },
-        { value: 10, text: "Grade 10" },
+        { value: 1, text: "1st semester" },
+        { value: 2, text: "2nd semester" },
       ],
     },
   };
 
-  const handleFilter = () => {};
+  const handleFilter = (type, val) => {
+    if (type === 1) {
+      setFilterValues({
+        ...filterValues,
+        text: val,
+      });
+    } else if (type === 2) {
+      setFilterValues({
+        ...filterValues,
+        selected1: parseInt(val),
+      });
+    }
+  };
 
   //? FORM RELATED
   const fetchSubjectsForForm = async () => {
@@ -194,7 +197,15 @@ const StudentClasses = (props) => {
       })
     );
     if (result.status === 200) {
-      setSubjects([...subjects, result.data]);
+      setStudent({
+        ...student,
+        subjects: [...student.subjects, result.data],
+      });
+      setFormSubjects(
+        formSubjects.filter((sub) => {
+          return result.data.subjectCode !== sub.code;
+        })
+      );
       setFormValues({
         ...formValues,
         shown: false,
@@ -215,55 +226,94 @@ const StudentClasses = (props) => {
   };
 
   const getTotal = (grades) => {
+    if (!grades) {
+      return 0;
+    }
     let total = 0;
-    const prelim = calculateTermGrade(grades.prelim) * 0.2;
-    const mid = calculateTermGrade(grades.mid) * 0.2;
-    const prefi = calculateTermGrade(grades.prefi) * 0.2;
-    const final = calculateTermGrade(grades.final) * 0.5;
+    const prelim = (grades.prelim || 0) * 0.2;
+    const mid = (grades.mid || 0) * 0.2;
+    const prefi = (grades.prefi || 0) * 0.2;
+    const final = (grades.final || 0) * 0.2;
     total = prelim + mid + prefi + final;
     return total;
   };
 
-  const handleDropStudentSubject = async (subjectID) => {
-    const result = await dropStudentSubject(subjectID);
-    dispatch(
-      showToast({
-        body: result.message,
-      })
-    );
-    if (result.status === 200) {
-      setSubjects(
-        subjects.filter((sub) => {
-          return sub._id !== subjectID;
-        })
-      );
-    }
-  };
-
   //? GRADES
   const handleGradeUpdate = async (subjectID) => {
-    setFormValues({
-      ...formValues,
-      shown: true,
-      type: 2,
-    });
+    const studentID = student._id;
+    const result = await getStudentSubjectDetails(studentID, subjectID);
+    if (result.status === 200) {
+      const d = result.data;
+      setFormValues({
+        ...formValues,
+        shown: true,
+        type: 2,
+      });
+      setFormGradeInputs(d.grades);
+      setFormGradeInit(d);
+    }
     setSelectedSubject(subjectID);
   };
 
-  const handleSubmitGrade = async () => {
+  const hanldeUpdateSubjectGrade = async () => {
     const studentID = student._id;
-    if (formGradeInputs.achieved === "") {
+    console.log("Selected subject", selectedSubject);
+    console.log("Student ID", studentID);
+    if (!selectedSubject) {
       dispatch(
         showToast({
-          body: "Please make sure you enter an achieved value",
+          body: "There is no subject selected",
         })
       );
       return;
     }
-    if (formGradeInputs.total === "") {
+    const inputs = {
+      prelim:
+        isNaN(formGradeInputs.prelim) || formGradeInputs.prelim === ""
+          ? 0
+          : parseInt(formGradeInputs.prelim),
+      mid:
+        isNaN(formGradeInputs.mid) || formGradeInputs.mid === ""
+          ? 0
+          : parseInt(formGradeInputs.mid),
+      prefi:
+        isNaN(formGradeInputs.prefi) || formGradeInputs.prefi === ""
+          ? 0
+          : parseInt(formGradeInputs.prefi),
+      final:
+        isNaN(formGradeInputs.final) || formGradeInputs.final === ""
+          ? 0
+          : parseInt(formGradeInputs.final),
+    };
+    setFormGradeInputs(inputs);
+    if (inputs.prelim < 0) {
       dispatch(
         showToast({
-          body: "Please make sure you enter a total value",
+          body: "Please make sure the prelim term is not less than 0",
+        })
+      );
+      return;
+    }
+    if (inputs.mid < 0) {
+      dispatch(
+        showToast({
+          body: "Please make sure the middle term is not less than 0",
+        })
+      );
+      return;
+    }
+    if (inputs.prefi < 0) {
+      dispatch(
+        showToast({
+          body: "Please make sure the prefinal term is not less than 0",
+        })
+      );
+      return;
+    }
+    if (inputs.final < 0) {
+      dispatch(
+        showToast({
+          body: "Please make sure the final term is not less than 0",
         })
       );
       return;
@@ -277,22 +327,24 @@ const StudentClasses = (props) => {
       selectedSubject,
       formGradeInputs
     );
-    dispatch(
-      showToast({
-        body: result.message,
-      })
-    );
+    dispatch(showToast({ body: result.message }));
     if (result.status === 200) {
       const d = result.data;
-      window.location.reload();
-      setSubjects(
-        subjects.map((sub) => {
+      // window.location.reload();
+      setStudent({
+        ...student,
+        subjects: student.subjects.map((sub) => {
           if (sub._id === d._id) {
             sub = d;
-            return sub;
           }
-        })
-      );
+          return sub;
+        }),
+      });
+      setFormValues({
+        ...formValues,
+        loading: false,
+        shown: false,
+      });
     }
     setFormValues({
       ...formValues,
@@ -323,19 +375,29 @@ const StudentClasses = (props) => {
               <th>#</th>
               <th>Code</th>
               <th>Subject</th>
-              <th>Schedules</th>
               <th>Prelim</th>
               <th>Midterm</th>
               <th>Prefi</th>
               <th>Final</th>
               <th>Total</th>
-              {(auth.user.role === 2 || auth.user.role === 3) && (
-                <th>Action</th>
-              )}
+              {auth.user.role === 3 && <th>Action</th>}
             </tr>
           </thead>
           <tbody>
-            {subjects.map((cls, index) => {
+            {filteredSubjects.map((cls, index) => {
+              if (
+                !cls.subjectCode
+                  .toLowerCase()
+                  .includes(filterValues.text.toLowerCase())
+              ) {
+                return;
+              }
+              if (
+                filterValues.selected1 !== 0 &&
+                filterValues.selected1 !== cls.yearLevelOfStudent
+              ) {
+                return;
+              }
               return (
                 <tr key={index}>
                   <td>{index + 1}</td>
@@ -343,25 +405,19 @@ const StudentClasses = (props) => {
                     {cls.subjectCode ? cls.subjectCode : "No subject code"}
                   </td>
                   <td>{cls.subjectName}</td>
-                  <td>{cls.schedules || "No schedule yet"}</td>
-                  <td>{calculateTermGrade(cls.grades.prelim).toString()}</td>
-                  <td>{calculateTermGrade(cls.grades.mid).toString()}</td>
-                  <td>{calculateTermGrade(cls.grades.prefi).toString()}</td>
-                  <td>{calculateTermGrade(cls.grades.final).toString()}</td>
-                  <td>{getTotal(cls.grades)}</td>
-                  {(auth.user.role === 2 || auth.user.role === 3) && (
+                  <td>
+                    {cls.grades && cls.grades.prelim ? cls.grades.prelim : 0}
+                  </td>
+                  <td>{cls.grades && cls.grades.mid ? cls.grades.mid : 0}</td>
+                  <td>
+                    {cls.grades && cls.grades.prefi ? cls.grades.prefi : 0}
+                  </td>
+                  <td>
+                    {cls.grades && cls.grades.final ? cls.grades.final : 0}
+                  </td>
+                  <td>{getSubjectTotalGrade(cls)}</td>
+                  {auth.user.role === 3 && (
                     <td>
-                      {auth.user.role === 2 && (
-                        <button
-                          className="table-function"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleDropStudentSubject(cls._id);
-                          }}
-                        >
-                          Drop
-                        </button>
-                      )}
                       <button
                         className="table-function"
                         onClick={(e) => {
@@ -379,140 +435,122 @@ const StudentClasses = (props) => {
           </tbody>
         </table>
       </div>
-      {formValues.type === 1 ? (
+      {formValues.type === 2 ? (
         <Form
           shown={formValues.shown}
           loading={formValues.loading}
-          handleSubmit={handleSubmit}
           handleCancel={handleCancel}
+          handleSubmit={hanldeUpdateSubjectGrade}
         >
           <div className="form-body">
             <div className="form-title">
-              {formValues.type === 1
-                ? "Student subject adding form"
-                : formValues.type === 2
-                ? "Student subject update form"
-                : "Student subject form"}
+              {"Grades of " +
+                (formGradeInit !== null ? formGradeInit.subjectCode : "None")}
             </div>
             <div className="form-fields">
-              <div className="form-field form-field-100">
-                <label>Choose a subject</label>
-                <select
-                  size={12}
-                  value={formInputs.subjectCode}
+              <div className="form-field">
+                <label>Preliminary Term Grade</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formGradeInputs.prelim}
                   onChange={(e) => {
-                    setFormInputs({
-                      ...formInputs,
-                      subjectCode: e.target.value,
+                    let val = e.target.value;
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      prelim: val,
                     });
                   }}
-                >
-                  {formSubjects.map((subject) => {
-                    return (
-                      <option key={subject.code} value={subject.code}>
-                        {studentForThisSubject(subject.student) +
-                          " : " +
-                          studentLevelText(subject.level) +
-                          " : " +
-                          semester(subject.semester) +
-                          " : " +
-                          subject.name}
-                      </option>
-                    );
-                  })}
-                </select>
+                />
+              </div>
+            </div>
+            <div className="form-fields">
+              <div className="form-field">
+                <label>Middle Term Grade</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formGradeInputs.mid}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      mid: val,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="form-fields">
+              <div className="form-field">
+                <label>Prefinal Term Grade</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formGradeInputs.prefi}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      prefi: val,
+                    });
+                  }}
+                />
+              </div>
+            </div>
+            <div className="form-fields">
+              <div className="form-field">
+                <label>Final Term Grade</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={formGradeInputs.final}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    setFormGradeInputs({
+                      ...formGradeInputs,
+                      final: val,
+                    });
+                  }}
+                />
               </div>
             </div>
           </div>
         </Form>
-      ) : formValues.type === 2 ? (
+      ) : formValues.type === 1 ? (
         <Form
           shown={formValues.shown}
           loading={formValues.loading}
           handleCancel={handleCancel}
-          handleSubmit={handleSubmitGrade}
+          handleSubmit={handleSubmit}
         >
           <div className="form-body">
-            <div className="form-title">Update subject grade</div>
+            <div className="form-title">Add subject</div>
             <div className="form-fields">
-              <div className="form-field form-field-100">
-                <label>Subject Grades</label>
-                {subjects.map((subject) => {
-                  if (subject._id === selectedSubject) {
+              <div className="form-field-100">
+                <label>Available Subjects</label>
+                <select
+                  value={formInputs ? formInputs.subjectCode : ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setFormInputs({
+                      ...formInputs,
+                      subjectCode: v,
+                    });
+                  }}
+                >
+                  {formSubjects.map((sub, index) => {
                     return (
-                      <SubjectGradeList
-                        key={subject._id}
-                        grades={subject.grades}
-                      />
+                      <option key={index} value={sub.code}>
+                        {sub.code + " : " + sub.name}
+                      </option>
                     );
-                  }
-                })}
-              </div>
-              <div className="form-field form-field-100">
-                <label>Term</label>
-                <select
-                  value={formGradeInputs.term}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value);
-                    setFormGradeInputs({
-                      ...formGradeInputs,
-                      term: val,
-                    });
-                  }}
-                >
-                  <option value={1}>Prelim term</option>
-                  <option value={2}>Mid term</option>
-                  <option value={3}>Prefi term</option>
-                  <option value={4}>Final term</option>
+                  })}
                 </select>
-              </div>
-              <div className="form-field form-field-100">
-                <label>Type</label>
-                <select
-                  value={formGradeInputs.type}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setFormGradeInputs({
-                      ...formGradeInputs,
-                      type: val,
-                    });
-                  }}
-                >
-                  <option value={1}>Quiz</option>
-                  <option value={2}>Activity</option>
-                  <option value={3}>Performance</option>
-                  <option value={4}>Exam</option>
-                </select>
-              </div>
-              <div className="form-field">
-                <label>Achieved</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={formGradeInputs.achieved}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    setFormGradeInputs({
-                      ...formGradeInputs,
-                      achieved: val,
-                    });
-                  }}
-                />
-              </div>
-              <div className="form-field">
-                <label>Total</label>
-                <input
-                  type="number"
-                  min={0}
-                  value={formGradeInputs.total}
-                  onChange={(e) => {
-                    let val = e.target.value;
-                    setFormGradeInputs({
-                      ...formGradeInputs,
-                      total: val,
-                    });
-                  }}
-                />
               </div>
             </div>
           </div>

@@ -77,18 +77,48 @@ exports.getSchoolInfoForUpdate = async (req, res) => {
   });
 };
 
+const generateNewRecordFromLatest = (info) => {
+  if (!info) {
+    return null;
+  }
+  const sem = info.sem;
+  if (sem === 1) {
+    return {
+      newSem: 2,
+      newSy: info.sy,
+    };
+  } else {
+    const sys = info.sy.split("-");
+    const syStart = parseInt(sys[1]) + 1;
+    const syEnd = syStart + 1;
+    return {
+      newSem: 1,
+      newSy: syStart.toString() + "-" + syEnd.toString(),
+    };
+  }
+};
+
 exports.createSchoolInfo = async (req, res) => {
-  const body = req.body;
-  const info = body.schoolInfo;
+  const latest = await SchoolInfoModel.findOne()
+    .sort({
+      createdAt: -1,
+    })
+    .exec();
+  const newRecord = generateNewRecordFromLatest(latest);
+  if (!newRecord) {
+    return res.status(500).send({
+      message: "Something went wrong",
+    });
+  }
   const newInfo = SchoolInfoModel({
-    sy: info.sy,
-    sem: info.sem,
-    startDate: info.startDate,
-    endDate: info.endDate,
+    sy: newRecord.newSy,
+    sem: newRecord.newSem,
+    startDate: new Date().toISOString().substring(0, 10),
+    endDate: new Date().toISOString().substring(0, 10),
   });
   await newInfo.save();
   await createHistory(
-    `create school info for school year: ${info.sy} and semester: ${info.sem}`,
+    `create school info for school year: ${newInfo.sy} and semester: ${newInfo.sem}`,
     false,
     req.userId
   );
@@ -112,13 +142,77 @@ exports.updateSchoolInfo = async (req, res) => {
     false,
     req.userId
   );
-  await updateNotifications();
   return res.status(200).send({
     message: "Successfully update the current school info",
     data: schoolInfo,
   });
 };
 
+exports.lockUnlockSchoolInfo = async (req, res) => {
+  const id = req.params.schoolID;
+  let info = await SchoolInfoModel.findById(id).exec();
+  if (!info) {
+    return res.status(404).send({
+      message: "School info is not found",
+    });
+  }
+  info.locked = !info.locked;
+  await info.save();
+  return res.status(200).send({
+    message: `School info is now ${info.locked ? "locked" : "unlocked"}.`,
+    data: info,
+  });
+};
+
+exports.moveSchoolInfo = async (req, res) => {
+  const id = req.params.schoolID;
+  if (!id) {
+    return res.status(404).send({
+      message: "School info is not found",
+    });
+  }
+  let infoToBeMoved = await SchoolInfoModel.findById(id).exec();
+  if (!infoToBeMoved) {
+    return res.status(404).send({
+      message: "School info is not found",
+    });
+  }
+
+  //? check if current is not locked
+  let findCurrent = await SchoolInfoModel.findOne({
+    current: true,
+  });
+  if (!findCurrent.locked) {
+    return res.status(409).send({
+      message:
+        "You need to lock the current school information before moving to the desired info.",
+    });
+  }
+
+  //? update current
+  //? update to be moved
+  findCurrent.current = false;
+  await findCurrent.save();
+  infoToBeMoved.current = true;
+  infoToBeMoved.locked = false;
+  await infoToBeMoved.save();
+
+  //? UPDATE STUDENT SUBJECTS TO COMPLETE OR DROPPED
+  await StudentSubjectModel.updateMany(
+    {
+      schoolInfo: findCurrent._id,
+      status: 0,
+    },
+    {
+      status: 2,
+    }
+  ).exec();
+
+  return res.status(200).send({
+    message: "Successfully moved to another school year and semester",
+    data: infoToBeMoved,
+  });
+};
 const updateNotifications = async () => {
   console.log("Updating notifications");
   const school = await SchoolInfoModel.findOne({

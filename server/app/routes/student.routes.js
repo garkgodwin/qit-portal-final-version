@@ -5,7 +5,7 @@ let router = require("express").Router();
 
 module.exports = function (app) {
   router.get(
-    "/",
+    "/:type",
     [
       authJwt.verifyToken,
       authJwt.isAdmin,
@@ -13,6 +13,28 @@ module.exports = function (app) {
       authJwt.isInstructor,
     ],
     controller.getAllStudents
+  );
+
+  router.get(
+    "/:studentID/details-for-update",
+    [
+      authJwt.verifyToken,
+      authJwt.isAdmin,
+      authJwt.isRegistrar,
+      authJwt.isInstructor,
+    ],
+    controller.getStudentDetailsForUpdate
+  );
+  router.put(
+    "/:studentID/details-for-update",
+    [
+      authJwt.verifyToken,
+      authJwt.isAdmin,
+      check.MobileUnique,
+      check.NameUnique,
+      check.SchoolHasCurrent,
+    ],
+    controller.updateStudentDetails
   );
   router.get(
     "/:studentID/subjects",
@@ -23,6 +45,11 @@ module.exports = function (app) {
       authJwt.isInstructor,
     ],
     controller.getStudentAndSubjects
+  );
+  router.get(
+    "/:studentID/subjects/:subjectID",
+    [authJwt.verifyToken],
+    controller.getStudentSubjectDetails
   );
   router.get(
     "/:studentID/subjects/:subjectID/scedules",
@@ -46,11 +73,6 @@ module.exports = function (app) {
     controller.addGuardian
   );
 
-  router.get(
-    "/:studentID/subjects/:subjectID/grades",
-    [authJwt.verifyToken],
-    controller.getStudentSubjectGrades
-  );
   router.get(
     "/:studentID/subjects-available-to-add",
     [authJwt.verifyToken, authJwt.isRegistrar, check.SchoolHasCurrent],
@@ -93,15 +115,23 @@ module.exports = function (app) {
     controller.updateStudent
   );
 
-  router.post(
-    "/:studentID/subjects/:subjectID/new-grade",
-    [
-      authJwt.verifyToken,
-      authJwt.isAdmin,
-      authJwt.isRegistrar,
-      authJwt.isInstructor,
-    ],
-    controller.createGrade
+  router.put(
+    "/:studentID/subjects/:subjectID/update-grade",
+    [authJwt.verifyToken, authJwt.isInstructor],
+    controller.updateGrade
   );
+
+  router.put(
+    "/:studentID/move",
+    [authJwt.verifyToken, authJwt.isAdmin, check.SchoolHasCurrent],
+    controller.moveStudentToCurrentSem
+  );
+
+  router.post(
+    "/notify/:type",
+    [authJwt.verifyToken, authJwt.isRegistrar],
+    controller.notifyStudents
+  );
+
   app.use("/api/v1/students", router);
 };

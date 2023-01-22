@@ -49,3 +49,13 @@ exports.calculateTermGrade = (tg) => {
     return 0;
   }
 };
+
+exports.getSubjectTotalGrade = (subject) => {
+  const grades = subject.grades;
+  const total =
+    grades.prelim * 0.2 +
+    grades.mid * 0.2 +
+    grades.prefi * 0.2 +
+    grades.final * 0.4;
+  return total;
+};

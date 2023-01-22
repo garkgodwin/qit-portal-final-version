@@ -2,7 +2,7 @@ import api from "../http-common";
 
 const ROOT = "/students";
 
-export const getAllStudents = async () => {
+export const getAllStudents = async (type) => {
   let result = {
     status: 0,
     message: "",
@@ -17,8 +17,9 @@ export const getAllStudents = async () => {
     },
   };
 
+  let mType = !type ? "all" : type;
   await api
-    .get(ROOT + "/", config)
+    .get(ROOT + `/${mType}`, config)
     .then((res) => {
       const resData = res.data;
       const data = resData.data;
@@ -102,7 +103,7 @@ export const createStudent = async (data) => {
   return result;
 };
 
-export const getStudentForUpdate = async (studentID, data) => {
+export const getStudentForUpdate = async (studentID) => {
   let result = {
     status: 0,
     message: "",
@@ -118,7 +119,7 @@ export const getStudentForUpdate = async (studentID, data) => {
   };
 
   await api
-    .get(ROOT + `/${studentID}/details-for-update`, data, config)
+    .get(ROOT + `/${studentID}/details-for-update`, config)
     .then((res) => {
       const resData = res.data;
       const data = resData.data;
@@ -168,7 +169,56 @@ export const updateStudent = async (studentID, data) => {
   };
 
   await api
-    .put(ROOT + `/${studentID}`, data, config)
+    .put(ROOT + `/${studentID}/details-for-update`, data, config)
+    .then((res) => {
+      const resData = res.data;
+      const data = resData.data;
+      const message = resData.message;
+      const status = res.status;
+      result = {
+        ...result,
+        status: status,
+        message: message,
+        data: data,
+      };
+    })
+    .catch((error) => {
+      const r = error.response;
+      if (r) {
+        const message = r.data.message;
+        const status = r.status;
+        result = {
+          ...result,
+          status: status,
+          message: message,
+        };
+      } else {
+        result = {
+          ...result,
+          status: 500,
+          message: "Something went wrong",
+        };
+      }
+    });
+  return result;
+};
+export const moveStudentToCurrentSem = async (studentID) => {
+  let result = {
+    status: 0,
+    message: "",
+    data: null,
+  };
+
+  const token = localStorage.getItem("token");
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  await api
+    .put(ROOT + `/${studentID}/move`, {}, config)
     .then((res) => {
       const resData = res.data;
       const data = resData.data;
@@ -400,6 +450,55 @@ export const getSubjectsAvailableForThisStudent = async (studentID) => {
     });
   return result;
 };
+export const getStudentSubjectDetails = async (studentID, subjectID) => {
+  let result = {
+    status: 0,
+    message: "",
+    data: null,
+  };
+
+  const token = localStorage.getItem("token");
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  await api
+    .get(ROOT + `/${studentID}/subjects/${subjectID}`, config)
+    .then((res) => {
+      const resData = res.data;
+      const data = resData.data;
+      const message = resData.message;
+      const status = res.status;
+      result = {
+        ...result,
+        status: status,
+        message: message,
+        data: data,
+      };
+    })
+    .catch((error) => {
+      const r = error.response;
+      if (r) {
+        const message = r.data.message;
+        const status = r.status;
+        result = {
+          ...result,
+          status: status,
+          message: message,
+        };
+      } else {
+        result = {
+          ...result,
+          status: 500,
+          message: "Something went wrong",
+        };
+      }
+    });
+  return result;
+};
 
 export const addSubjectToStudent = async (studentID, data) => {
   let result = {
@@ -517,7 +616,11 @@ export const createGrade = async (studentID, subjectID, data) => {
   };
 
   await api
-    .post(ROOT + `/${studentID}/subjects/${subjectID}/new-grade`, data, config)
+    .put(
+      ROOT + `/${studentID}/subjects/${subjectID}/update-grade`,
+      data,
+      config
+    )
     .then((res) => {
       const resData = res.data;
       const data = resData.data;

@@ -13,8 +13,25 @@ const {
   seniorSubjectsToArray,
   juniorSubjectsToArray,
 } = require("../helpers/get");
-const { calculateTermGrade } = require("../helpers/calculate");
 const nodemailer = require("nodemailer");
+
+exports.createGradeNotifications = async (req, res) => {
+  const currentSchoolID = req.currentSchoolID;
+  const body = req.body;
+  const type = parseInt(body.data.type); // 1 - prelim , 2 - midterm, 3 - prefinal, 4 - final, 5 - all grades
+  const students = await StudentModel.find({
+    schoolInfo: currentSchoolID,
+  });
+
+  for (let i = 0; i < students.length; i++) {
+    const student = students[i];
+  }
+
+  return res.status(200).send({
+    message:
+      "Successfully created the notifications, sending grades to students now",
+  });
+};
 
 exports.getUnsentSmsNotifications = async (req, res) => {
   console.log("Fetch unsent SMS notifications");
@@ -202,10 +219,14 @@ const getStudentCurrentGrade = async (student, currentSchoolID) => {
         return a.code === sub.code;
       });
       if (subDetails.type !== "extra") {
-        const prelimGrade = calculateTermGrade(sub.grades.prelim) * 0.2;
-        const midGrade = calculateTermGrade(sub.grades.mid) * 0.2;
-        const prefiGrade = calculateTermGrade(sub.grades.prefi) * 0.2;
-        const finalGrade = calculateTermGrade(sub.grades.final) * 0.4;
+        const prelimGrade =
+          sub.grades && sub.grades.prelim ? sub.grades.prelim : 0 * 0.2;
+        const midGrade =
+          sub.grades && sub.grades.prelim ? sub.grades.prelim : 0 * 0.2;
+        const prefiGrade =
+          sub.grades && sub.grades.prelim ? sub.grades.prelim : 0 * 0.2;
+        const finalGrade =
+          sub.grades && sub.grades.prelim ? sub.grades.prelim : 0 * 0.2;
         const subTotal =
           (prelimGrade + midGrade + prefiGrade + finalGrade) *
           100 *

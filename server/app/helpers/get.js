@@ -2,6 +2,7 @@ const {
   COLLEGE_SUBJECTS,
   SENIOR_SUBJECTS,
   JUNIOR_SUBJECTS,
+  GRADING_SYSTEM_PER_SEM,
 } = require("../constants/school");
 
 exports.getSubjectDetails = (student, code) => {
@@ -132,4 +133,46 @@ exports.getDay = (day) => {
   else if (day === 6) return "Saturday";
   else if (day === 7) return "Sunday";
   else return "None";
+};
+
+exports.getSubjectTotalGrade = (subject) => {
+  const grades = subject.grades;
+  const total =
+    grades.prelim * 0.2 +
+    grades.mid * 0.2 +
+    grades.prefi * 0.2 +
+    grades.final * 0.4;
+  return total;
+};
+exports.getTermTotalGrade = (subjects) => {
+  let totalGrades = 0;
+  let totalUnits = 0;
+  for (let i = 0; i < subjects.length; i++) {
+    let s = subjects[i];
+    if (s.type === "major" || s.type === "minor") {
+      const total = this.getSubjectTotalGrade(s);
+      const units = s.units;
+      totalGrades += total * units;
+      totalUnits += units;
+    }
+  }
+  let total = totalGrades / units;
+  total = total / 100;
+  return {
+    total: total,
+    point: getTermGradePoint(total),
+  };
+};
+
+const getTermGradePoint = (total) => {
+  const gwa = 0;
+  const system = GRADING_SYSTEM_PER_SEM;
+  for (let i = 0; i < system.length; i++) {
+    const sys = system[i];
+    if (sys.min <= total && sys.max >= total) {
+      gwa = sys.point;
+      break;
+    }
+  }
+  return gwa;
 };

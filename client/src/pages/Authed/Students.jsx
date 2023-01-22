@@ -11,7 +11,9 @@ import {
   getAllStudents,
   createStudent,
   updateStudent,
+  moveStudentToCurrentSem,
   getStudentForUpdate,
+  getStudentAndSubjects,
 } from "../../api/students";
 import { getAllSchoolConstants } from "../../api/general";
 //? HELPERS
@@ -23,8 +25,14 @@ import {
   studentForThisSubject,
   studentLevelText,
 } from "../../helpers/formatSubjects";
+import { getCurrentSchoolInfo } from "../../api/schoolInfo";
+import { startLoading, stopLoading } from "../../features/pageSlice";
+import { createGradeNotifications } from "../../api/notification";
 
 const Students = () => {
+  const page = useSelector((state) => state.page);
+  const [currentSchoolInfo, setCurrentSchoolInfo] = useState(null);
+  const [currentStudents, setCurrentStudents] = useState(true);
   const auth = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -77,14 +85,6 @@ const Students = () => {
       label: "Name",
       placeholder: "name here...",
     },
-    selected1: {
-      label: "Student is",
-      options: [
-        { value: 1, text: "College" },
-        { value: 2, text: "Senior High" },
-        { value: 3, text: "Junior High" },
-      ],
-    },
     selected2: {
       label: "Year Level",
       options: [
@@ -101,14 +101,6 @@ const Students = () => {
       label: "Name",
       placeholder: "name here...",
     },
-    selected1: {
-      label: "Student is",
-      options: [
-        { value: 1, text: "College" },
-        { value: 2, text: "Senior High" },
-        { value: 3, text: "Junior High" },
-      ],
-    },
     selected2: {
       label: "Year Level",
       options: [
@@ -122,14 +114,6 @@ const Students = () => {
     text: {
       label: "Name",
       placeholder: "name here...",
-    },
-    selected1: {
-      label: "Student is",
-      options: [
-        { value: 1, text: "College" },
-        { value: 2, text: "Senior High" },
-        { value: 3, text: "Junior High" },
-      ],
     },
     selected2: {
       label: "Year Level",
@@ -170,13 +154,21 @@ const Students = () => {
     handleFilterStudents();
   }, [students]);
   useEffect(() => {
+    fetchCurrentSchoolInfo();
     handleFetchStudents();
     handleFetchSchoolConstants();
   }, []);
   const handleFetchStudents = async () => {
-    const result = await getAllStudents();
+    const result = await getAllStudents("current");
     if (result.status === 200) {
       setStudents(result.data);
+    }
+  };
+  const fetchCurrentSchoolInfo = async () => {
+    const result = await getCurrentSchoolInfo();
+    console.log(result);
+    if (result.status === 200) {
+      setCurrentSchoolInfo(result.data);
     }
   };
   const handleFetchSchoolConstants = async () => {
@@ -296,6 +288,79 @@ const Students = () => {
   const handleViewGuardian = (studentID) => {
     navigate(`/students/${studentID}/guardians`);
   };
+  const handleViewStudentsBySchoolInfo = async () => {
+    const type = currentStudents ? "all" : "current";
+    const result = await getAllStudents(type);
+    if (result.status === 200) {
+      setStudents([]);
+      setCurrentStudents(!currentStudents);
+      setStudents(result.data);
+    }
+  };
+
+  const handleMoveStudent = async (id) => {
+    const result = await moveStudentToCurrentSem(id);
+    dispatch(
+      showToast({
+        body: result.message,
+      })
+    );
+    if (result.status === 200) {
+      setStudents(
+        students.filter((student) => {
+          return student._id !== id;
+        })
+      );
+    }
+  };
+
+  const handleViewUpdate = async (id) => {
+    setSelectedData(id);
+    setFormValues({
+      ...formValues,
+      type: 1,
+      shown: true,
+    });
+    const result = await getStudentForUpdate(id);
+    if (result.status === 200) {
+      const data = result.data;
+      const person = data.person;
+      setFormInputs({
+        ...formInputs,
+        person: {
+          ...formInputs.person,
+          name: person.name,
+          age: person.age,
+          birthDate: person.birthDate,
+          gender: person.gender,
+          mobileNumber: person.mobileNumber,
+        },
+        student: {
+          ...formInputs.student,
+          level: data.level,
+          course: data.course,
+          section: data.section,
+        },
+      });
+    } else {
+      setFormValues({
+        ...formValues,
+        shown: false,
+        loading: false,
+      });
+    }
+  };
+
+  const handleNotify = async (type) => {
+    dispatch(startLoading());
+    const result = await createGradeNotifications({ type: type });
+    dispatch(
+      showToast({
+        body: result.message,
+      })
+    );
+    dispatch(stopLoading());
+  };
 
   return (
     <>
@@ -313,6 +378,70 @@ const Students = () => {
           state={filterValues}
           handleState={handleFilter}
         />
+        <div className="page-header-functions">
+          {auth.user.role === 2 && (
+            <div className="page-header-notifications">
+              <span>Notify: </span>
+              <button
+                className="page-function page-function-notification"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNotify(1);
+                }}
+              >
+                Preliminary Term
+              </button>
+
+              <button
+                className="page-function page-function-notification"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNotify(2);
+                }}
+              >
+                Middle Term
+              </button>
+              <button
+                className="page-function page-function-notification"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNotify(3);
+                }}
+              >
+                Pre-final Term
+              </button>
+
+              <button
+                className="page-function page-function-notification"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNotify(4);
+                }}
+              >
+                Final Term
+              </button>
+
+              <button
+                className="page-function page-function-notification"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNotify(4);
+                }}
+              >
+                Final Grade
+              </button>
+            </div>
+          )}
+          <button
+            className="page-function"
+            onClick={(e) => {
+              e.preventDefault();
+              handleViewStudentsBySchoolInfo();
+            }}
+          >
+            {currentStudents ? "View all students" : "View current students"}
+          </button>
+        </div>
       </div>
       <div className="page-body">
         <div className="page-body-title">
@@ -323,11 +452,10 @@ const Students = () => {
             <tr>
               <th>#</th>
               <th>Name</th>
-              <th>Type</th>
               <th>Course</th>
               <th>Year Level</th>
               <th>Section</th>
-              <th>Guardian</th>
+              <th># of subjects</th>
               {(auth.user.role === 1 || auth.user.role === 2) && (
                 <th>Actions</th>
               )}
@@ -340,18 +468,13 @@ const Students = () => {
                 <tr key={student._id}>
                   <td>{index + 1}</td>
                   <td>{person.name}</td>
-                  <td>{studentForThisSubject(student.type)}</td>
                   <td>{student.course}</td>
                   <td>{studentLevelText(student.level)}</td>
                   <td>{student.section}</td>
+                  <td>{student.subjectCount || "None"}</td>
                   <td>
-                    {student.guardian
-                      ? student.guardian.person.name
-                      : "No guardian"}
-                  </td>
-                  {(auth.user.role === 1 || auth.user.role === 2) && (
-                    <td>
-                      {auth.user.role === 1 && (
+                    {auth.user.role === 1 && (
+                      <>
                         <button
                           className="table-function"
                           onClick={(e) => {
@@ -361,7 +484,31 @@ const Students = () => {
                         >
                           Guardian
                         </button>
-                      )}
+                        {!currentStudents &&
+                          currentSchoolInfo &&
+                          currentSchoolInfo._id !== student.schoolInfo && (
+                            <button
+                              className="table-function"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleMoveStudent(student._id);
+                              }}
+                            >
+                              Move
+                            </button>
+                          )}
+                        <button
+                          className="table-function"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleViewUpdate(student._id);
+                          }}
+                        >
+                          Update
+                        </button>
+                      </>
+                    )}
+                    {auth.user.role === 2 && (
                       <button
                         className="table-function"
                         onClick={(e) => {
@@ -370,8 +517,8 @@ const Students = () => {
                       >
                         Subjects
                       </button>
-                    </td>
-                  )}
+                    )}
+                  </td>
                 </tr>
               );
             })}
@@ -379,15 +526,17 @@ const Students = () => {
         </table>
       </div>
       <div className="page-functions">
-        <button
-          className="page-function"
-          onClick={(e) => {
-            e.preventDefault();
-            handleCreate();
-          }}
-        >
-          Create student
-        </button>
+        {auth.user.role === 1 && (
+          <button
+            className="page-function"
+            onClick={(e) => {
+              e.preventDefault();
+              handleCreate();
+            }}
+          >
+            Create student
+          </button>
+        )}
       </div>
       <Form
         shown={formValues.shown}
@@ -403,85 +552,43 @@ const Students = () => {
               ? "Student update form"
               : "Student form"}
           </h4>
+          {selectedData === null && (
+            <div className="form-fields">
+              <div className="form-field">
+                <label>Username</label>
+                <input
+                  type="text"
+                  value={formInputs.user.username}
+                  onChange={(e) => {
+                    setFormInputs({
+                      ...formInputs,
+                      user: {
+                        ...formInputs.user,
+                        username: e.target.value.trim(),
+                      },
+                    });
+                  }}
+                />
+              </div>
+              <div className="form-field">
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={formInputs.user.email}
+                  onChange={(e) => {
+                    setFormInputs({
+                      ...formInputs,
+                      user: {
+                        ...formInputs.user,
+                        email: e.target.value.trim(),
+                      },
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          )}
           <div className="form-fields">
-            <div className="form-field">
-              <label>Username</label>
-              <input
-                type="text"
-                value={formInputs.user.username}
-                onChange={(e) => {
-                  setFormInputs({
-                    ...formInputs,
-                    user: {
-                      ...formInputs.user,
-                      username: e.target.value.trim(),
-                    },
-                  });
-                }}
-              />
-            </div>
-            <div className="form-field">
-              <label>Email</label>
-              <input
-                type="email"
-                value={formInputs.user.email}
-                onChange={(e) => {
-                  setFormInputs({
-                    ...formInputs,
-                    user: {
-                      ...formInputs.user,
-                      email: e.target.value.trim(),
-                    },
-                  });
-                }}
-              />
-            </div>
-          </div>
-          <div className="form-fields">
-            <div className="form-field">
-              <label>Student Type</label>
-              <select
-                value={formInputs.student.type}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value);
-                  //? course, year, section
-                  let course = "";
-                  let level = 0;
-                  let section = "";
-                  if (val === 1) {
-                    course = schoolConstants.COLLEGE_COURSES[0].code;
-                    level = schoolConstants.COLLEGE_LEVELS[0].value;
-                    section = schoolConstants.COLLEGE_SECTIONS[0];
-                  } else if (val === 2) {
-                    course = schoolConstants.SENIOR_COURSES[0].code;
-                    level = schoolConstants.SENIOR_LEVELS[0].value;
-                    section = schoolConstants.SENIOR_SECTIONS[0];
-                  } else if (val === 3) {
-                    course = schoolConstants.JUNIOR_COURSES[0].code;
-                    level = schoolConstants.JUNIOR_LEVELS[0].value;
-                    section = schoolConstants.JUNIOR_SECTIONS[0];
-                  }
-                  setFormInputs({
-                    ...formInputs,
-                    student: {
-                      ...formInputs.student,
-                      type: parseInt(e.target.value),
-                      course: course,
-                      level: level,
-                      section: section,
-                    },
-                  });
-                }}
-              >
-                {schoolConstants.STUDENT_TYPES.map((type) => {
-                  return (
-                    <option key={type.value} value={type.value}>
-                      {type.name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
             <div className="form-field">
               <label>Course</label>
               <select

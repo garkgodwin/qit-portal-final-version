@@ -16,13 +16,23 @@ module.exports = function (app) {
   );
   router.post(
     "/",
-    [authJwt.verifyToken, authJwt.isAdmin, check.SchoolAndSemUnique],
+    [authJwt.verifyToken, authJwt.isAdmin],
     controller.createSchoolInfo
   );
   router.get(
     "/:schoolID/for-update",
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.getSchoolInfoForUpdate
+  );
+  router.put(
+    "/:schoolID/lock-unlock",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.lockUnlockSchoolInfo
+  );
+  router.put(
+    "/:schoolID/move",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.moveSchoolInfo
   );
   router.put(
     "/:schoolID/for-update",

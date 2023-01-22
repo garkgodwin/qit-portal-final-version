@@ -9,8 +9,18 @@ module.exports = ({ Schema, model }) => {
         type: String,
         required: true,
       },
-      subjectType: {
+      units: {
+        //? Number of units for this subject
         type: Number,
+        required: true,
+      },
+      type: {
+        //? major || minor || extra
+        type: String,
+        required: true,
+      },
+      subjectType: {
+        type: Number, // recommended student student type
       },
       studentType: {
         type: Number, //1 - college, 2 - senior high, 3 - junior high
@@ -20,105 +30,25 @@ module.exports = ({ Schema, model }) => {
       },
       grades: {
         prelim: {
-          quiz: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          activity: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          performance: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          exam: {
-            achieved: Number,
-            total: Number,
-          },
+          type: Number,
+          default: 0,
         },
         mid: {
-          quiz: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          activity: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          performance: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          exam: {
-            achieved: Number,
-            total: Number,
-          },
+          type: Number,
+          default: 0,
         },
         prefi: {
-          quiz: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          activity: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          performance: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          exam: {
-            achieved: Number,
-            total: Number,
-          },
+          type: Number,
+          default: 0,
         },
         final: {
-          quiz: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          activity: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          performance: [
-            {
-              achieved: Number,
-              total: Number,
-            },
-          ],
-          exam: {
-            achieved: Number,
-            total: Number,
-          },
+          type: Number,
+          default: 0,
         },
       },
-      dropped: {
-        type: Boolean,
-        default: false,
+      status: {
+        type: Number,
+        default: 0, // 0 - incomplete, 1 - completed, 2 - dropped
       },
       class: {
         type: Schema.Types.ObjectId,

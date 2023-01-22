@@ -42,14 +42,6 @@ const Subjects = () => {
       label: "Subject name or code",
       placeholder: "subject here...",
     },
-    selected1: {
-      label: "Subject Type",
-      options: [
-        { value: 1, text: "College Subjects" },
-        { value: 2, text: "Senior Subjects" },
-        { value: 3, text: "Junior Subjects" },
-      ],
-    },
     selected2: {
       label: "Year Level",
       options: [
@@ -58,68 +50,6 @@ const Subjects = () => {
         { value: 2, text: "2nd year" },
         { value: 3, text: "3rd year" },
         { value: 4, text: "4th year" },
-      ],
-    },
-    selected3: {
-      label: "Semester",
-      options: [
-        { value: 0, text: "All semesters" },
-        { value: 1, text: "1st semester" },
-        { value: 2, text: "2nd semester" },
-      ],
-    },
-  };
-  const init2 = {
-    text: {
-      label: "Subject name or code",
-      placeholder: "subject here...",
-    },
-    selected1: {
-      label: "Subject Type",
-      options: [
-        { value: 1, text: "College Subjects" },
-        { value: 2, text: "Senior Subjects" },
-        { value: 3, text: "Junior Subjects" },
-      ],
-    },
-    selected2: {
-      label: "Grade Level",
-      options: [
-        { value: 0, text: "All grade levels" },
-        { value: 11, text: "Grade 11" },
-        { value: 12, text: "Grade 12" },
-      ],
-    },
-    selected3: {
-      label: "Semester",
-      options: [
-        { value: 0, text: "All semesters" },
-        { value: 1, text: "1st semester" },
-        { value: 2, text: "2nd semester" },
-      ],
-    },
-  };
-  const init3 = {
-    text: {
-      label: "Subject name or code",
-      placeholder: "subject here...",
-    },
-    selected1: {
-      label: "Subject Type",
-      options: [
-        { value: 1, text: "College Subjects" },
-        { value: 2, text: "Senior Subjects" },
-        { value: 3, text: "Junior Subjects" },
-      ],
-    },
-    selected2: {
-      label: "Grade Level",
-      options: [
-        { value: 0, text: "All grade levels" },
-        { value: 7, text: "Grade 7" },
-        { value: 8, text: "Grade 8" },
-        { value: 9, text: "Grade 9" },
-        { value: 10, text: "Grade 10" },
       ],
     },
     selected3: {
@@ -229,19 +159,7 @@ const Subjects = () => {
   return (
     <>
       <div className="page-header">
-        <Filter
-          init={
-            filterValues.selected1 === "1"
-              ? init1
-              : filterValues.selected1 === "2"
-              ? init2
-              : filterValues.selected1 === "3"
-              ? init3
-              : init1
-          }
-          state={filterValues}
-          handleState={handleFilter}
-        />
+        <Filter init={init1} state={filterValues} handleState={handleFilter} />
       </div>
       <div className="page-body">
         <div className="page-body-title">
