@@ -10,9 +10,8 @@ var bcrypt = require("bcryptjs");
 
 exports.authenticate = async (req, res) => {
   const userId = req.userId;
-  let user = await User.findOne({
-    _id: userId,
-  })
+  console.log(userId);
+  let user = await User.findById(userId)
     .populate({
       path: "person",
     })

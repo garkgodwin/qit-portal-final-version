@@ -49,10 +49,7 @@ exports.createGradeNotifications = async (req, res) => {
 
   //? get subject of each student and get total grade
   //? use the helper get
-  let shootDate = new Date(Date.parse(school.endDate));
-  shootDate = new Date(shootDate.setDate(shootDate.getDate() - 8))
-    .toISOString()
-    .substring(0, 10);
+  let shootDate = new Date().toISOString().substring(0, 10);
   for (let i = 0; i < students.length; i++) {
     let message = "";
     const student = students[i];
@@ -66,6 +63,7 @@ exports.createGradeNotifications = async (req, res) => {
         "You have no subjects enrolled for this school year and semester";
     } else {
       if (type === 5) {
+        //TODO: add name at prefix and grade(pointing system)
         const grade = getSemTotalGrade(subjects);
         const isCongrats =
           grade.point <= 3
@@ -86,8 +84,8 @@ exports.createGradeNotifications = async (req, res) => {
     const newNotif = NotificationModel({
       subject: subject,
       body: message,
-      mobileNumber: person.mobileNumber,
-      email: user.email,
+      mobileNumber: student.person.mobileNumber,
+      email: student.user.email,
       smsSent: false,
       emailSent: false,
       shootDate: shootDate,
