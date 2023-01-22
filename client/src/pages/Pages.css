@@ -281,3 +281,14 @@
   color: var(--color-10);
   font-weight: bold;
 }
+
+.page-function-report{
+  width: 100%;
+  border: 1px solid var(--color-60);
+  background-color: transparent;
+  color: var(--color-60)
+}
+.page-function-report:hover{
+  background-color: var(--color-60);
+  color: var(--color-10);
+}

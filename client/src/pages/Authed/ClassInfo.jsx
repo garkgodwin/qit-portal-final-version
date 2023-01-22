@@ -158,8 +158,17 @@ const ClassInfo = () => {
           <div className="form-fields">
             <div className="form-field form-field-100">
               <label>Available studnets to be added</label>
-              <select size={12}>
+              <select
+                size={12}
+                value={formInputs.studentID}
+                onChange={(e) => {
+                  setFormInputs({
+                    studentID: e.target.value,
+                  });
+                }}
+              >
                 {formStudents.map((student, index) => {
+                  console.log(student);
                   return (
                     <option key={index} value={student._id}>
                       {student.course +

@@ -362,6 +362,10 @@ const Students = () => {
     dispatch(stopLoading());
   };
 
+  const handleGenerateReport = (studentID) => {
+    navigate(`/students/${studentID}/report`);
+  };
+
   return (
     <>
       <div className="page-header">
@@ -509,14 +513,24 @@ const Students = () => {
                       </>
                     )}
                     {auth.user.role === 2 && (
-                      <button
-                        className="table-function"
-                        onClick={(e) => {
-                          handleViewSubjects(student._id);
-                        }}
-                      >
-                        Subjects
-                      </button>
+                      <>
+                        <button
+                          className="table-function"
+                          onClick={(e) => {
+                            handleViewSubjects(student._id);
+                          }}
+                        >
+                          Subjects
+                        </button>
+                        <button
+                          className="table-function"
+                          onClick={(e) => {
+                            handleGenerateReport(student._id);
+                          }}
+                        >
+                          Report
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>

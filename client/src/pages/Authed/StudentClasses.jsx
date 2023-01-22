@@ -25,6 +25,7 @@ import {
   studentForThisSubject,
   studentLevelText,
 } from "../../helpers/formatSubjects";
+import ReportSample from "../../components/reports/ReportSample";
 
 //? HELPERS
 import {
@@ -53,7 +54,7 @@ const StudentClasses = (props) => {
     loading: false,
   });
   const [formInputs, setFormInputs] = useState({
-    subjectCode: null,
+    subjectCode: "",
   });
   const [formGradeInputs, setFormGradeInputs] = useState({
     prelim: "",
@@ -66,6 +67,7 @@ const StudentClasses = (props) => {
 
   useEffect(() => {
     handleGetCurrentSchoolInfo();
+    const pth = location.pathname.split("/")[3];
   }, []);
 
   useEffect(() => {
@@ -167,8 +169,6 @@ const StudentClasses = (props) => {
   };
   const handleFilterCurrent = () => {
     if (current !== null && student !== null) {
-      console.log(current);
-      console.log(student);
       setFilterValues({
         ...filterValues,
         selected1: student.level,
@@ -238,6 +238,7 @@ const StudentClasses = (props) => {
         ...formValues,
         shown: false,
       });
+      window.location.reload(true);
     }
     setFormValues({
       ...formValues,
@@ -379,19 +380,44 @@ const StudentClasses = (props) => {
       loading: false,
     });
   };
+
+  //? REPORT
+  const handleGenerateReport = async () => {
+    console.log(student);
+  };
   return (
     <>
       <div className="page-header">
-        <Filter init={init1} state={filterValues} handleState={handleFilter} />
-        <button
-          className="page-function page-function-top"
-          onClick={(e) => {
-            e.preventDefault();
-            handleFilterCurrent();
-          }}
-        >
-          Current subjects
-        </button>
+        {location.pathname.split("/")[3] !== "report" ? (
+          <>
+            <Filter
+              init={init1}
+              state={filterValues}
+              handleState={handleFilter}
+            />
+            <button
+              className="page-function page-function-top"
+              onClick={(e) => {
+                e.preventDefault();
+                handleFilterCurrent();
+              }}
+            >
+              Current subjects
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              className="page-function page-function-top page-function-report"
+              onClick={(e) => {
+                e.preventDefault();
+                handleGenerateReport();
+              }}
+            >
+              Generate Report
+            </button>
+          </>
+        )}
       </div>
       <div className="page-body">
         <div className="page-body-title">
@@ -417,7 +443,8 @@ const StudentClasses = (props) => {
               <th>Prefi</th>
               <th>Final</th>
               <th>Total</th>
-              {auth.user.role === 3 && <th>Action</th>}
+              {location.pathname.split("/")[3] !== "report" &&
+                auth.user.role === 3 && <th>Action</th>}
             </tr>
           </thead>
           <tbody>

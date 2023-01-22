@@ -13,6 +13,7 @@ import Staffs from "./Staffs";
 import Students from "./Students";
 import StudentClasses from "./StudentClasses";
 import StudentGuardians from "./StudentGuardians";
+import StudentReport from "./StudentReport";
 import SchoolInfo from "./SchoolInfo";
 import Subjects from "./Subjects";
 import Classes from "./Classes";
@@ -56,6 +57,10 @@ const AuthedPages = () => {
           <Route path="students" element={<Students />} />
           <Route
             path="students/:studentID/subjects"
+            element={<StudentClasses />}
+          />
+          <Route
+            path="students/:studentID/report"
             element={<StudentClasses />}
           />
           <Route path="school-info" element={<SchoolInfo />} />
