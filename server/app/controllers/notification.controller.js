@@ -12,6 +12,8 @@ const {
   collegeSubjectsToArray,
   seniorSubjectsToArray,
   juniorSubjectsToArray,
+  getSemTotalGrade,
+  getTermGrade,
 } = require("../helpers/get");
 const nodemailer = require("nodemailer");
 
@@ -19,12 +21,78 @@ exports.createGradeNotifications = async (req, res) => {
   const currentSchoolID = req.currentSchoolID;
   const body = req.body;
   const type = parseInt(body.data.type); // 1 - prelim , 2 - midterm, 3 - prefinal, 4 - final, 5 - all grades
+  //? get students
   const students = await StudentModel.find({
     schoolInfo: currentSchoolID,
-  });
+  })
+    .populate({
+      path: "person",
+    })
+    .populate({
+      path: "user",
+    });
 
+  const mainSubject = "QIT Portal";
+  let subjectMessage =
+    type === 1
+      ? "Preliminary Term"
+      : type === 2
+      ? "Middle Term"
+      : type === 3
+      ? "Pre-final Term"
+      : type === 4
+      ? "Final Term"
+      : type === 5
+      ? "Semester"
+      : "Grade";
+  const subject = mainSubject + " : " + subjectMessage;
+
+  //? get subject of each student and get total grade
+  //? use the helper get
+  let shootDate = new Date(Date.parse(school.endDate));
+  shootDate = new Date(shootDate.setDate(shootDate.getDate() - 8))
+    .toISOString()
+    .substring(0, 10);
   for (let i = 0; i < students.length; i++) {
+    let message = "";
     const student = students[i];
+    const name = student.person.name;
+    const subjects = await StudentSubjectModel.find({
+      student: student._id,
+      schoolInfo: currentSchoolID,
+    }).exec();
+    if (subjects.length === 0) {
+      message =
+        "You have no subjects enrolled for this school year and semester";
+    } else {
+      if (type === 5) {
+        const grade = getSemTotalGrade(subjects);
+        const isCongrats =
+          grade.point <= 3
+            ? "Congratulations! You passed for this school year and semester"
+            : "We are very sorry to inform you that you failed for this school year and semester";
+        message = `${isCongrats}\nYour grade is ${grade.total} with point ${grade.point}`;
+      } else if (type !== 5) {
+        const numberOfSubjectsPassed = getTermGrade(subjects, type);
+        const isCongrats =
+          numberOfSubjectsPassed < subjects.length
+            ? `We are very sorry to inform you that you have ${
+                subjects.length - numberOfSubjectsPassed
+              } subjects that failed the term: ${subjectMessage}`
+            : `Congratulations! You passed all your subjects for this term: ${subjectMessage}`;
+        message = isCongrats;
+      }
+    }
+    const newNotif = NotificationModel({
+      subject: subject,
+      body: message,
+      mobileNumber: person.mobileNumber,
+      email: user.email,
+      smsSent: false,
+      emailSent: false,
+      shootDate: shootDate,
+    });
+    await newNotif.save();
   }
 
   return res.status(200).send({

@@ -135,6 +135,35 @@ exports.getDay = (day) => {
   else return "None";
 };
 
+exports.getTermGrade = (subjects, type) => {
+  let numberOfSubjectsPassed = 0;
+  for (let i = 0; i < subjects.length; i++) {
+    let s = subjects[i];
+    if (type === 1) {
+      const prelim = s.grades.prelim;
+      if (prelim >= 50) {
+        numberOfSubjectsPassed += 1;
+      }
+    } else if (type === 2) {
+      const mid = s.grades.mid;
+      if (mid >= 50) {
+        numberOfSubjectsPassed += 1;
+      }
+    } else if (type === 3) {
+      const prefi = s.grades.prefi;
+      if (prefi >= 50) {
+        numberOfSubjectsPassed += 1;
+      }
+    } else if (type === 4) {
+      const final = s.grades.final;
+      if (final >= 50) {
+        numberOfSubjectsPassed += 1;
+      }
+    }
+  }
+  return numberOfSubjectsPassed;
+};
+
 exports.getSubjectTotalGrade = (subject) => {
   const grades = subject.grades;
   const total =
@@ -144,7 +173,7 @@ exports.getSubjectTotalGrade = (subject) => {
     grades.final * 0.4;
   return total;
 };
-exports.getTermTotalGrade = (subjects) => {
+exports.getSemTotalGrade = (subjects) => {
   let totalGrades = 0;
   let totalUnits = 0;
   for (let i = 0; i < subjects.length; i++) {
@@ -156,7 +185,7 @@ exports.getTermTotalGrade = (subjects) => {
       totalUnits += units;
     }
   }
-  let total = totalGrades / units;
+  let total = totalGrades / totalUnits;
   total = total / 100;
   return {
     total: total,
@@ -165,7 +194,7 @@ exports.getTermTotalGrade = (subjects) => {
 };
 
 const getTermGradePoint = (total) => {
-  const gwa = 0;
+  let gwa = 0;
   const system = GRADING_SYSTEM_PER_SEM;
   for (let i = 0; i < system.length; i++) {
     const sys = system[i];

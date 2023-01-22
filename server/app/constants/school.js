@@ -1098,48 +1098,48 @@ const GRADING_SYSTEM_PER_SEM = [
     point: 2.75,
   }, //? 2.75
   {
-    min: 55,
+    min: 50,
     max: 59,
     point: 3.0,
   }, //? 3.0
   {
-    min: 50,
-    max: 54,
+    min: 45,
+    max: 49,
     point: 3.25,
   }, //? 3.25
   {
-    min: 45,
-    max: 49,
-    point: 3.5,
-  }, //? 3.0
-  {
     min: 40,
     max: 44,
-    point: 3.75,
-  }, //? 3.0
+    point: 3.5,
+  }, //? 3.5
   {
     min: 35,
     max: 39,
-    point: 4.0,
-  }, //? 4.0
+    point: 3.75,
+  }, //? 3.75
   {
     min: 30,
     max: 34,
-    point: 4.25,
-  }, //? 4.25
+    point: 4.0,
+  }, //? 4.0
   {
     min: 25,
     max: 29,
-    point: 4.5,
-  }, //? 4.5
+    point: 4.25,
+  }, //? 4.25
   {
     min: 20,
     max: 24,
+    point: 4.5,
+  }, //? 4.5
+  {
+    min: 15,
+    max: 19,
     point: 4.75,
   }, //? 4.75
   {
     min: 0,
-    max: 19,
+    max: 14,
     point: 5.0,
   }, //? 5.0
 ];

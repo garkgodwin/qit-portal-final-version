@@ -425,7 +425,7 @@ const Students = () => {
                 className="page-function page-function-notification"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleNotify(4);
+                  handleNotify(5);
                 }}
               >
                 Final Grade
