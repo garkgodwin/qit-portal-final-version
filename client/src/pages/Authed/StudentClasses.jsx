@@ -12,6 +12,7 @@ import {
   dropStudentSubject,
   createGrade,
 } from "../../api/students";
+import { getCurrentSchoolInfo } from "../../api/schoolInfo";
 
 //? ROUTES
 import { useLocation, useNavigate } from "react-router-dom";
@@ -37,6 +38,7 @@ const StudentClasses = (props) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const [current, setCurrent] = useState(null);
   const [student, setStudent] = useState(null);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
   const [filterValues, setFilterValues] = useState({
@@ -63,6 +65,10 @@ const StudentClasses = (props) => {
   const [formGradeInit, setFormGradeInit] = useState(null);
 
   useEffect(() => {
+    handleGetCurrentSchoolInfo();
+  }, []);
+
+  useEffect(() => {
     const pth = location.pathname.split("/");
     const studentID = pth[2];
     handleFetchStudentAndClasses(studentID);
@@ -81,6 +87,7 @@ const StudentClasses = (props) => {
   useEffect(() => {
     if (student) {
       setFilteredSubjects(student.subjects);
+      handleFilterCurrent();
     } else {
       setFilteredSubjects([]);
     }
@@ -109,6 +116,7 @@ const StudentClasses = (props) => {
     }
   };
 
+  //? FILTER
   const init1 = {
     text: {
       label: "Subject",
@@ -133,7 +141,6 @@ const StudentClasses = (props) => {
       ],
     },
   };
-
   const handleFilter = (type, val) => {
     if (type === 1) {
       setFilterValues({
@@ -145,9 +152,30 @@ const StudentClasses = (props) => {
         ...filterValues,
         selected1: parseInt(val),
       });
+    } else if (type === 3) {
+      setFilterValues({
+        ...filterValues,
+        selected2: parseInt(val),
+      });
     }
   };
-
+  const handleGetCurrentSchoolInfo = async () => {
+    const result = await getCurrentSchoolInfo();
+    if (result.status === 200) {
+      setCurrent(result.data);
+    }
+  };
+  const handleFilterCurrent = () => {
+    if (current !== null && student !== null) {
+      console.log(current);
+      console.log(student);
+      setFilterValues({
+        ...filterValues,
+        selected1: student.level,
+        selected2: current.sem,
+      });
+    }
+  };
   //? FORM RELATED
   const fetchSubjectsForForm = async () => {
     if (!student) {
@@ -355,6 +383,15 @@ const StudentClasses = (props) => {
     <>
       <div className="page-header">
         <Filter init={init1} state={filterValues} handleState={handleFilter} />
+        <button
+          className="page-function page-function-top"
+          onClick={(e) => {
+            e.preventDefault();
+            handleFilterCurrent();
+          }}
+        >
+          Current subjects
+        </button>
       </div>
       <div className="page-body">
         <div className="page-body-title">
@@ -395,6 +432,12 @@ const StudentClasses = (props) => {
               if (
                 filterValues.selected1 !== 0 &&
                 filterValues.selected1 !== cls.yearLevelOfStudent
+              ) {
+                return;
+              }
+              if (
+                filterValues.selected2 !== 0 &&
+                filterValues.selected2 !== cls.schoolInfo.sem
               ) {
                 return;
               }

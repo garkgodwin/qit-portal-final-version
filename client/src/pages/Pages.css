@@ -265,3 +265,10 @@
   background-color: var(--color-60);
   color: var(--color-10);
 }
+
+
+.page-function-top{
+  background-color: var(--color-30);
+  color: var(--color-10);
+  font-weight: bold;
+}
