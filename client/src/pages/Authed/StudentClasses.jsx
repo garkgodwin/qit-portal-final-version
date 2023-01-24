@@ -10,6 +10,7 @@ import {
   getStudentSubjectDetails,
   addSubjectToStudent,
   dropStudentSubject,
+  getStudentReport,
   createGrade,
 } from "../../api/students";
 import { getCurrentSchoolInfo } from "../../api/schoolInfo";
@@ -33,6 +34,9 @@ import {
   getSubjectTotalGrade,
 } from "../../helpers/calculate";
 import SubjectGradeList from "../../components/list/SubjectGradeList";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+import logo from "../../assets/logo.png";
 
 const StudentClasses = (props) => {
   const auth = useSelector((state) => state.auth);
@@ -64,11 +68,30 @@ const StudentClasses = (props) => {
   });
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [formGradeInit, setFormGradeInit] = useState(null);
+  const [report, setReport] = useState({
+    text: "",
+    grade: 0,
+    point: 5,
+  });
 
   useEffect(() => {
     handleGetCurrentSchoolInfo();
     const pth = location.pathname.split("/")[3];
+    const id = location.pathname.split("/")[2];
+    console.log(pth);
+    // get the text for top and total grade and point
+    /*
+      { text: "bla bla", grade: 90, point: 1};
+      */
+    handleGetStudentDetailsForReport(id);
   }, []);
+
+  const handleGetStudentDetailsForReport = async (studentID) => {
+    const result = await getStudentReport(studentID);
+    if (result.status === 200) {
+      setReport(result.data);
+    }
+  };
 
   useEffect(() => {
     const pth = location.pathname.split("/");
@@ -384,7 +407,15 @@ const StudentClasses = (props) => {
   //? REPORT
   const handleGenerateReport = async () => {
     console.log(student);
+    const input = document.getElementById("page-body-report");
+    html2canvas(document.querySelector("#page-body-report")).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", [297, 260]);
+      pdf.addImage(imgData, "PNG", 0, 0);
+      pdf.save("download.pdf");
+    });
   };
+
   return (
     <>
       <div className="page-header">
@@ -419,25 +450,47 @@ const StudentClasses = (props) => {
           </>
         )}
       </div>
-      <div className="page-body">
-        <div className="page-body-title">
-          <h3>{student === null ? "Student" : student.person.name}</h3>
-          <span>
-            {student === null
-              ? "No data"
-              : student.course +
-                " : " +
-                student.level +
-                " : " +
-                student.section}
-          </span>
-        </div>
+      <div
+        id="page-body-report"
+        className={
+          "page-body" +
+          (location.pathname.split("/")[3] === "report"
+            ? " page-body-report"
+            : "")
+        }
+      >
+        {location.pathname.split("/")[3] === "subjects" && (
+          <div className="page-body-title">
+            <h3>{student === null ? "Student" : student.person.name}</h3>
+            <span>
+              {student === null
+                ? "No data"
+                : student.course +
+                  " : " +
+                  student.level +
+                  " : " +
+                  student.section}
+            </span>
+          </div>
+        )}
+        {location.pathname.split("/")[3] === "report" && (
+          <div className="page-body-top">
+            <div className="page-body-top-title">
+              <div className="logo">
+                <img src={logo} alt={"LOGO"} />
+                <h5>Quezon Institute of Technology</h5>
+              </div>
+            </div>
+            <p>{report !== null ? report.text : ""}</p>
+          </div>
+        )}
         <table>
           <thead>
             <tr>
               <th>#</th>
               <th>Code</th>
               <th>Subject</th>
+              {location.pathname.split("/")[3] === "report" && <th>Units</th>}
               <th>Prelim</th>
               <th>Midterm</th>
               <th>Prefi</th>
@@ -475,6 +528,9 @@ const StudentClasses = (props) => {
                     {cls.subjectCode ? cls.subjectCode : "No subject code"}
                   </td>
                   <td>{cls.subjectName}</td>
+                  {location.pathname.split("/")[3] === "report" && (
+                    <td>Units</td>
+                  )}
                   <td>
                     {cls.grades && cls.grades.prelim ? cls.grades.prelim : 0}
                   </td>
@@ -504,6 +560,10 @@ const StudentClasses = (props) => {
             })}
           </tbody>
         </table>
+        <div className="after-table">
+          <p>Grade: {report !== null ? report.grade : 0}</p>
+          <p>GWA: {report !== null ? report.point : 0}</p>
+        </div>
       </div>
       {formValues.type === 2 ? (
         <Form

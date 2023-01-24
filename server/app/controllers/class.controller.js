@@ -230,6 +230,18 @@ exports.addStudentToClass = async (req, res) => {
     });
   }
 
+  /*
+
+   for (let i = 0; i < classData.students.length; i++) {
+    const studentID = classData.students[i];
+    if (studentID === student._id) {
+      return res.status(409).send({
+        message: "Student is already in this class",
+      });
+    }
+  }
+
+  */
   if (classData.students.includes(student._id)) {
     return res.status(409).send({
       message: "Student is already in this class",

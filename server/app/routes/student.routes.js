@@ -74,6 +74,12 @@ module.exports = function (app) {
   );
 
   router.get(
+    "/:studentID/report",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.getStudentReport
+  );
+
+  router.get(
     "/:studentID/subjects-available-to-add",
     [authJwt.verifyToken, authJwt.isRegistrar, check.SchoolHasCurrent],
     controller.getStudentSubjectAvailableToAdd

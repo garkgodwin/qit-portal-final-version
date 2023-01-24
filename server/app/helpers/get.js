@@ -186,7 +186,6 @@ exports.getSemTotalGrade = (subjects) => {
     }
   }
   let total = totalGrades / totalUnits;
-  total = total / 100;
   return {
     total: total,
     point: getTermGradePoint(total),

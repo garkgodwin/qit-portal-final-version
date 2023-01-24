@@ -23,6 +23,7 @@ const {
   getSubjectDetails,
   subjectName,
   getSubjectTotalGrade,
+  getSemTotalGrade,
 } = require("../helpers/get");
 
 exports.getAllStudents = async (req, res) => {
@@ -368,6 +369,63 @@ exports.addGuardian = async (req, res) => {
   return res.status(200).send({
     message: "Successfully created a guardian",
     data: guardian,
+  });
+};
+exports.getStudentReport = async (req, res) => {
+  let data = {
+    text: "",
+    grade: 0,
+    point: 5,
+  };
+
+  // get current school data
+  // get student details
+  // get student total grades
+  // get student point
+  const school = await SchoolInfoModel.findOne({
+    current: true,
+    locked: false,
+  }).exec();
+  if (!school) {
+    return res.status(409).send({
+      message: "There are no current school year and semester",
+    });
+  }
+  const student = await StudentModel.findById(req.params.studentID)
+    .populate({
+      path: "person",
+    })
+    .exec();
+
+  if (!student) {
+    return res.status(404).send({
+      message: "Student is not found",
+    });
+  }
+
+  const subjects = await StudentSubjectModel.find({
+    student: student._id,
+  }).exec();
+
+  const grade = getSemTotalGrade(subjects);
+
+  console.log("Reports all good");
+  data = {
+    text: `${student.person.gender === 1 ? "Mr." : "Ms."} ${
+      student.person.name
+    } has a grade of 
+    ${grade.total} for 100 percentile with the general weighted average of ${
+      grade.point
+    } for the school year: ${school.sy}
+     and semester: ${school.sem}
+    `,
+    grade: grade.total,
+    point: grade.point,
+  };
+
+  return res.status(200).send({
+    message: "Successfully fetched the student report",
+    data: data,
   });
 };
 

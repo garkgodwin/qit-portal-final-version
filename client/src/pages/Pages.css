@@ -292,3 +292,74 @@
   background-color: var(--color-60);
   color: var(--color-10);
 }
+
+
+.page-body-top{
+  margin-top: 40px;
+}
+
+table{
+  margin-top: 40px;
+}
+
+.after-table{
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+  font-size: 14px;
+}
+.after-table p {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.page-body-report .page-body-top p{
+  font-size: 12px;
+}
+
+.page-body-report{
+  background-color: var(--color-60);
+  padding: 40px;
+  width: 793.7007874px;
+  height: 1122.519685px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.page-body-report::-webkit-scrollbar{
+  display: none;
+}
+
+.page-body-report table{
+  min-width: 0;
+  border: 1px solid black;
+  width: inherit;
+  font-size: 12px;
+}
+.page-body-report table tbody tr{
+  background-color: var(--color-60) !important;
+}
+.page-body-report table tr td{
+  color: black;
+  font-weight: bold;
+  margin: 0 !important;
+  padding: 0;
+}
+
+.page-body-top .logo{
+  width: auto;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: var(--color-10);
+  margin-bottom: 40px;
+}
+.page-body-top .logo h5{
+  color: var(--color-60);
+  margin-top: 8px;
+}
+.page-body-top .logo img{
+  width: 40px;
+  height: 40px;
+}

@@ -14,6 +14,7 @@ const {
   juniorSubjectsToArray,
   getSemTotalGrade,
   getTermGrade,
+  getSubjectTotalGrade,
 } = require("../helpers/get");
 const nodemailer = require("nodemailer");
 
@@ -45,7 +46,7 @@ exports.createGradeNotifications = async (req, res) => {
       : type === 5
       ? "Semester"
       : "Grade";
-  const subject = mainSubject + " : " + subjectMessage;
+  const textTitle = mainSubject + " : " + subjectMessage;
 
   //? get subject of each student and get total grade
   //? use the helper get
@@ -53,44 +54,101 @@ exports.createGradeNotifications = async (req, res) => {
   for (let i = 0; i < students.length; i++) {
     let message = "";
     const student = students[i];
+    const gender = student.person.gender === 1 ? "Mr. " : "Ms.";
     const name = student.person.name;
     const subjects = await StudentSubjectModel.find({
       student: student._id,
       schoolInfo: currentSchoolID,
     }).exec();
     if (subjects.length === 0) {
-      message =
-        "You have no subjects enrolled for this school year and semester";
+      message = `${gender}${student.person.name}, you have no subjects enrolled for this school year and semester`;
+      const newNotif = NotificationModel({
+        subject: textTitle,
+        body: message,
+        mobileNumber: student.person.mobileNumber,
+        email: student.user.email,
+        smsSent: false,
+        emailSent: false,
+        shootDate: shootDate,
+      });
+      await newNotif.save();
     } else {
       if (type === 5) {
-        //TODO: add name at prefix and grade(pointing system)
+        for (let x = 0; x < subjects.length; x++) {
+          const subject = subjects[x];
+          const subjectTotalGrade = getSubjectTotalGrade(subject);
+          message =
+            `${gender}${student.person.name}, ` +
+            (subjectTotalGrade < 50
+              ? `we are very sorry to inform you that you have failed for the subject ${subject.subjectName} with the grade of ${subjectTotalGrade}`
+              : `congratulations! You passed the subject ${subject.subjectName} with the grade of ${subjectTotalGrade}`);
+
+          const newNotif = NotificationModel({
+            subject: textTitle,
+            body: message,
+            mobileNumber: student.person.mobileNumber,
+            email: student.user.email,
+            smsSent: false,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          await newNotif.save();
+        }
         const grade = getSemTotalGrade(subjects);
+        console.log(grade);
         const isCongrats =
           grade.point <= 3
-            ? "Congratulations! You passed for this school year and semester"
-            : "We are very sorry to inform you that you failed for this school year and semester";
-        message = `${isCongrats}\nYour grade is ${grade.total} with point ${grade.point}`;
-      } else if (type !== 5) {
-        const numberOfSubjectsPassed = getTermGrade(subjects, type);
-        const isCongrats =
-          numberOfSubjectsPassed < subjects.length
-            ? `We are very sorry to inform you that you have ${
-                subjects.length - numberOfSubjectsPassed
-              } subjects that failed the term: ${subjectMessage}`
-            : `Congratulations! You passed all your subjects for this term: ${subjectMessage}`;
+            ? `${gender}${student.person.name}, congratulations! You passed for this school year and semester. Your grade is ${grade.total} with the equivalent GWA: ${grade.point}`
+            : `${gender}${student.person.name}, we are very sorry to inform you that you failed for this school year and semester. Your grade is ${grade.total} with the equivalent GWA: ${grade.point}`;
         message = isCongrats;
+
+        const newNotif = NotificationModel({
+          subject: textTitle,
+          body: message,
+          mobileNumber: student.person.mobileNumber,
+          email: student.user.email,
+          smsSent: false,
+          emailSent: false,
+          shootDate: shootDate,
+        });
+        await newNotif.save();
+      } else if (type !== 5) {
+        for (let x = 0; x < subjects.length; x++) {
+          const subject = subjects[x];
+          const grades = subject.grades;
+          const prelim = grades.prelim;
+          const mid = grades.mid;
+          const prefi = grades.prefi;
+          const final = grades.final;
+          const termGrade =
+            type === 1
+              ? prelim
+              : type === 2
+              ? mid
+              : type === 3
+              ? prefi
+              : type === 4
+              ? final
+              : 0;
+          message =
+            `${gender}${student.person.name}, ` +
+            (termGrade < 50
+              ? `we are very sorry to inform you that you have failed for the subject ${subject.subjectName} with the grade of ${termGrade}`
+              : `congratulations! You passed the subject ${subject.subjectName} with the grade of ${termGrade}`);
+
+          const newNotif = NotificationModel({
+            subject: textTitle,
+            body: message,
+            mobileNumber: student.person.mobileNumber,
+            email: student.user.email,
+            smsSent: false,
+            emailSent: false,
+            shootDate: shootDate,
+          });
+          await newNotif.save();
+        }
       }
     }
-    const newNotif = NotificationModel({
-      subject: subject,
-      body: message,
-      mobileNumber: student.person.mobileNumber,
-      email: student.user.email,
-      smsSent: false,
-      emailSent: false,
-      shootDate: shootDate,
-    });
-    await newNotif.save();
   }
 
   return res.status(200).send({
