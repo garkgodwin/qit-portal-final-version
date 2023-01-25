@@ -529,7 +529,7 @@ const StudentClasses = (props) => {
                   </td>
                   <td>{cls.subjectName}</td>
                   {location.pathname.split("/")[3] === "report" && (
-                    <td>Units</td>
+                    <td>{cls.units}</td>
                   )}
                   <td>
                     {cls.grades && cls.grades.prelim ? cls.grades.prelim : 0}
