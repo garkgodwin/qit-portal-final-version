@@ -2,6 +2,7 @@ const { SECRET_KEY } = require("../constants/configs");
 const db = require("../models");
 const User = db.users;
 const PersonModel = db.persons;
+const StudentModel = db.students;
 
 const { createHistory } = require("./history.controller");
 
@@ -10,7 +11,11 @@ var bcrypt = require("bcryptjs");
 
 exports.authenticate = async (req, res) => {
   const userId = req.userId;
-  console.log(userId);
+  if (!userId || userId === "") {
+    return res.status(404).send({
+      message: "User is not found",
+    });
+  }
   let user = await User.findById(userId)
     .populate({
       path: "person",
@@ -22,12 +27,25 @@ exports.authenticate = async (req, res) => {
     });
   }
   await createHistory(`authenticating token`, false, userId);
-  return res.status(200).send({
-    message: "Credentials are valid.",
-    data: {
-      user: user,
-    },
-  });
+  if (user.role === 4 || user.role === 5) {
+    const student = await StudentModel.findOne({
+      user: user._id,
+    }).exec();
+    return res.status(200).send({
+      message: "Credentials are valid",
+      data: {
+        user: user,
+        student: student,
+      },
+    });
+  } else {
+    return res.status(200).send({
+      message: "Credentials are valid.",
+      data: {
+        user: user,
+      },
+    });
+  }
 };
 
 exports.login = async (req, res) => {
@@ -81,14 +99,29 @@ exports.login = async (req, res) => {
 
   await createHistory(`logged in`, false, user._id);
 
-  return res.status(200).send({
-    data: {
-      type: "login",
-      user: user,
-      token: token,
-    },
-    message: "Your credentials are valid",
-  });
+  if (user.role === 4 || user.role === 5) {
+    const student = await StudentModel.findOne({
+      user: user._id,
+    }).exec();
+    return res.status(200).send({
+      data: {
+        type: "login",
+        user: user,
+        student: student,
+        token: token,
+      },
+      message: "Your credentials are valid",
+    });
+  } else {
+    return res.status(200).send({
+      data: {
+        type: "login",
+        user: user,
+        token: token,
+      },
+      message: "Your credentials are valid",
+    });
+  }
 };
 
 exports.logout = async (req, res, next) => {

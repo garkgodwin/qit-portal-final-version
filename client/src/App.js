@@ -50,7 +50,7 @@ function App() {
       if (result.status === 200) {
         dispatch(
           stateAuthenticate({
-            data: result.data.user,
+            data: result.data,
           })
         );
       }

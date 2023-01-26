@@ -19,7 +19,7 @@ exports.startSeed = async () => {
   // await createSchoolInfo();
   // await createAdmin();
   //? once connected start email notifcations
-  // require("../controllers/notification.controller").getAndSendEmailNotifications();
+  require("../controllers/notification.controller").getAndSendEmailNotifications();
   // require("../controllers/notification.controller").createAndSendNotifications7days();
   //? update grades if empty
   // await updateGradesIfEmpty();

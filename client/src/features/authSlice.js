@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   user: null,
+  student: null,
 };
 
 /*
@@ -19,16 +20,23 @@ export const authSlice = createSlice({
   reducers: {
     login: (state, action) => {
       const p = action.payload;
+      state.user = p.data.user;
+      if (state.user.role === 4 || state.user.role === 5) {
+        state.student = p.data.student;
+      }
       localStorage.setItem("token", p.token);
-      state.user = p.data;
     },
     authenticate: (state, action) => {
       const p = action.payload;
-      state.user = p.data;
+      state.user = p.data.user;
+      if (state.user.role === 4 || state.user.role === 5) {
+        state.student = p.data.student;
+      }
     },
     logout: (state) => {
       localStorage.clear();
       state.user = null;
+      state.student = null;
     },
   },
 });

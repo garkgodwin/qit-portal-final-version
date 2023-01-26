@@ -197,6 +197,7 @@ exports.getAndSendEmailNotifications = async () => {
       const notif = data[i];
       if (isDateLessThanToday(notif.shootDate)) {
         if (sendEmail(sender, senderPass, notif)) {
+          console.log("Email sent to: " + notif.email);
           await NotificationModel.findByIdAndUpdate(notif._id, {
             emailSent: true,
           });

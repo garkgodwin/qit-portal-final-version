@@ -78,11 +78,6 @@ const StudentClasses = (props) => {
     handleGetCurrentSchoolInfo();
     const pth = location.pathname.split("/")[3];
     const id = location.pathname.split("/")[2];
-    console.log(pth);
-    // get the text for top and total grade and point
-    /*
-      { text: "bla bla", grade: 90, point: 1};
-      */
     handleGetStudentDetailsForReport(id);
   }, []);
 

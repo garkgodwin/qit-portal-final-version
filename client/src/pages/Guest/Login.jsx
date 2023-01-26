@@ -38,7 +38,7 @@ const Login = () => {
         dispatch(
           stateLogin({
             token: result.data.token,
-            data: result.data.user,
+            data: result.data,
           })
         );
         dispatch(stopLoading());

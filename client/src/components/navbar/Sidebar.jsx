@@ -71,15 +71,28 @@ const Sidebar = () => {
           {school.map((g) => {
             if (g.access.includes(auth.user.role)) {
               const pathname = location.pathname;
-              const cls =
-                pathname === g.to
-                  ? "sidebar-nav-link sidebar-nav-link-active"
-                  : "sidebar-nav-link";
-              return (
-                <NavLink key={g.text} to={g.to} className={cls}>
-                  {g.text}
-                </NavLink>
-              );
+              if (auth.user.role === 4 && g.to === "/subjects") {
+                const to = `/students/${auth.student._id}/subjects`;
+                const cls =
+                  pathname === to
+                    ? "sidebar-nav-link sidebar-nav-link-active"
+                    : "sidebar-nav-link";
+                return (
+                  <NavLink key={g.text} to={to} className={cls}>
+                    {g.text}
+                  </NavLink>
+                );
+              } else {
+                const cls =
+                  pathname === g.to
+                    ? "sidebar-nav-link sidebar-nav-link-active"
+                    : "sidebar-nav-link";
+                return (
+                  <NavLink key={g.text} to={g.to} className={cls}>
+                    {g.text}
+                  </NavLink>
+                );
+              }
             }
           })}
         </div>
